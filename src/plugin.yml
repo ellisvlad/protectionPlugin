@@ -1,0 +1,4 @@
+name: ProtectionPlugin
+main: com.ellisvlad.protectionPlugin.Main
+author: ellisvlad
+version: 0.1
