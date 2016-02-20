@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -14,7 +15,7 @@ import com.google.gson.Gson;
 
 public class DatabaseConnector {
 	
-	private static final String configFileName = "SqlConnection.json";
+	private static final String configFileName = "ProtectionSqlConnection.json";
 
 	private static Connection sqlConnection = null;
 
@@ -94,7 +95,7 @@ public class DatabaseConnector {
 			ResultSet rs=sqlConnection.prepareStatement("SHOW TABLE STATUS").executeQuery();
 			while (rs.next()) rows.add(rs.getString("Name"));
 			rs.close();
-			
+
 			if (!rows.contains("players")) {
 				System.out.println("Creating new players table...");
 				sqlConnection.prepareStatement(
@@ -103,11 +104,31 @@ public class DatabaseConnector {
 					+ "`uuidLo` BIGINT NOT NULL COMMENT 'Ingame UUID-Lo', "
 					+ "`uuidHi` BIGINT NOT NULL COMMENT 'Ingame UUID-Hi', "
 					+ "`tool_id` SMALLINT UNSIGNED NOT NULL COMMENT 'Tool id used for regions', "
-					+ "`tool_data` SMALLINT UNSIGNED NOT NULL COMMENT 'Tool damage value used for regions', "
+					+ "`tool_data` SMALLINT NOT NULL COMMENT 'Tool damage value used for regions', "
 					+ "PRIMARY KEY (`pid`)"
 					+ ")"
 				).executeUpdate();
 				System.out.println("Created new players table");
+			}
+			if (!rows.contains("config")) {
+				System.out.println("Creating new config table...");
+				sqlConnection.prepareStatement(
+					"CREATE TABLE `config` ("
+					+ "`name` VARCHAR(255) NOT NULL,"
+					+ "`value` VARCHAR(255) NOT NULL"
+					+ ")"
+				).executeUpdate();
+				PreparedStatement configStatement=sqlConnection.prepareStatement(
+					"INSERT INTO `config` (`name`, `value`) VALUES (?, ?)"
+				);
+				configStatement.setString(1, "default_tool_id");
+				configStatement.setString(2, "35"); //TODO: Wool.. 271
+				configStatement.addBatch();
+				configStatement.setString(1, "default_tool_data");
+				configStatement.setString(2, "4"); //TODO: Yellow.. -1
+				configStatement.addBatch();
+				configStatement.executeBatch();
+				System.out.println("Created new config table");
 			}
 		} catch (SQLException e) {
 			System.err.println("Database init!");
