@@ -22,8 +22,19 @@ public class Main extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		plugin = this;
+
+		Logger.out.println("Initialising...");
+		Long startTime=System.currentTimeMillis();
+		DatabaseConnector.init();
+		globalConfig=DatabaseConnector.loadDatabaseConfig();
+		if (globalConfig==null) {
+			Logger.err.println("Something went wrong when initialising database! Cannot continue!");
+			return;
+		}
+		
 		PluginManager pm = Bukkit.getPluginManager();
 		pm.registerEvents(new EventListener(), this);
+		Logger.out.println("All OK after "+(System.currentTimeMillis()-startTime)+"ms");
 	}
 	
 	@Override

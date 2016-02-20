@@ -45,7 +45,7 @@ public final class DatabaseConnector {
 			try {
 				writeConfig(file, new DatabaseConfig());
 			} catch (IOException e) {
-				System.err.println("Failed to create default database config!");
+				Logger.err.println("Failed to create default database config!");
 				e.printStackTrace();
 				return false;
 			}
@@ -55,7 +55,7 @@ public final class DatabaseConnector {
 		try {
 			config = readConfig(file);
 		} catch (IOException e) {
-			System.err.println("Failed to load database config!");
+			Logger.err.println("Failed to load database config!");
 			e.printStackTrace();
 			return false;
 		}
@@ -71,7 +71,7 @@ public final class DatabaseConnector {
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 		} catch (Exception e) {
-			System.err.println("Mysql driver not found!");
+			Logger.err.println("Mysql driver not found!");
 			return false;
 		}
 		
@@ -79,7 +79,7 @@ public final class DatabaseConnector {
 			try {
 				sqlConnection = DriverManager.getConnection("jdbc:mysql://"+config.host+":3306/"+config.db, config.username, config.password);
 			} catch (SQLException e) {
-				System.err.println("Could not connect to "+config.host+"/"+config.db+" using login "+config.username);
+				Logger.err.println("Could not connect to "+config.host+"/"+config.db+" using login "+config.username);
 				e.printStackTrace();
 				return false;
 			}
@@ -102,7 +102,7 @@ public final class DatabaseConnector {
 			rs.close();
 
 			if (!rows.contains("players")) {
-				System.out.println("Creating new players table...");
+				Logger.out.println("Creating new players table...");
 				sqlConnection.prepareStatement(
 					"CREATE TABLE `players`("
 					+ "`pid` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Unique ID', "
@@ -113,10 +113,10 @@ public final class DatabaseConnector {
 					+ "PRIMARY KEY (`pid`)"
 					+ ")"
 				).executeUpdate();
-				System.out.println("Created new players table");
+				Logger.out.println("Created new players table");
 			}
 			if (!rows.contains("config")) {
-				System.out.println("Creating new config table...");
+				Logger.out.println("Creating new config table...");
 				sqlConnection.prepareStatement(
 					"CREATE TABLE `config` ("
 					+ "`name` VARCHAR(255) NOT NULL,"
@@ -133,10 +133,10 @@ public final class DatabaseConnector {
 				configStatement.setString(2, "4"); //TODO: Yellow.. -1
 				configStatement.addBatch();
 				configStatement.executeBatch();
-				System.out.println("Created new config table");
+				Logger.out.println("Created new config table");
 			}
 		} catch (SQLException e) {
-			System.err.println("Database init failed!");
+			Logger.err.println("Database init failed!");
 			e.printStackTrace();
 			return false;
 		}
@@ -165,7 +165,7 @@ public final class DatabaseConnector {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("Error loading config! Field not parsed correctly: \""+configFieldName+"\"");
+			Logger.err.println("Error loading config! Field not parsed correctly: \""+configFieldName+"\"");
 			e.printStackTrace();
 			return null;
 		}
@@ -228,7 +228,7 @@ public final class DatabaseConnector {
 					try {
 						sqlConnection.prepareStatement("SELECT 1").executeQuery().close();
 					} catch (SQLException e) {
-						System.err.println("Database ping failed!");
+						Logger.err.println("Database ping failed!");
 					}
 				}
 				try {
