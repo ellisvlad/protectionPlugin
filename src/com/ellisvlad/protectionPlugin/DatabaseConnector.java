@@ -3,6 +3,7 @@ package com.ellisvlad.protectionPlugin;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,28 +14,32 @@ import java.util.HashSet;
 
 import com.google.gson.Gson;
 
-public class DatabaseConnector {
+public final class DatabaseConnector {
 	
 	private static final String configFileName = "ProtectionSqlConnection.json";
 
 	private static Connection sqlConnection = null;
 
+	private DatabaseConnector() {}
+
 	/**
 	 * Connects to a database using provided database information.
+	 * @return Returns false if there was an error
 	 * @param host Host ip
 	 * @param db Database name
 	 * @param u Username
 	 * @param p Password
 	 */
-	public DatabaseConnector(String host, String db, String u, String p) {
-		initConnection(new DatabaseConfig(host, db, u, p));
+	public static boolean init(DatabaseConfig config) {
+		return initConnection(config);
 	}
 	
 	/**
 	 *  Loads connection info from file, making a default config file if one doesn't exist.
 	 *  Then connects to the database.
+	 * @return Returns false if there was an error
 	 */
-	public DatabaseConnector() {
+	public static boolean init() {
 		File file = new File(configFileName);
 		if (!file.exists()) {
 			try {
@@ -42,7 +47,7 @@ public class DatabaseConnector {
 			} catch (IOException e) {
 				System.err.println("Failed to create default database config!");
 				e.printStackTrace();
-				return;
+				return false;
 			}
 		}
 		
@@ -52,9 +57,9 @@ public class DatabaseConnector {
 		} catch (IOException e) {
 			System.err.println("Failed to load database config!");
 			e.printStackTrace();
-			return;
+			return false;
 		}
-		initConnection(config);
+		return initConnection(config);
 	}
 	
 	/**
@@ -62,7 +67,7 @@ public class DatabaseConnector {
 	 * @return False if the connection failed or if already connected
 	 * @param config DatabaseConfig to connect with
 	 */
-	private boolean initConnection(DatabaseConfig config) {
+	private static boolean initConnection(DatabaseConfig config) {
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 		} catch (Exception e) {
@@ -80,16 +85,16 @@ public class DatabaseConnector {
 			}
 			
 			// Connected OK!
-			initDatabaseTables();
-			return true;
+			return initDatabaseTables();
 		}
 		return false;
 	}
 	
 	/**
 	 * Creates any tables not initialised in the database.
+	 * @return 
 	 */
-	private void initDatabaseTables() {
+	private static boolean initDatabaseTables() {
 		try {
 			HashSet<String> rows=new HashSet<>();
 			ResultSet rs=sqlConnection.prepareStatement("SHOW TABLE STATUS").executeQuery();
@@ -131,9 +136,40 @@ public class DatabaseConnector {
 				System.out.println("Created new config table");
 			}
 		} catch (SQLException e) {
-			System.err.println("Database init!");
+			System.err.println("Database init failed!");
 			e.printStackTrace();
+			return false;
 		}
+		return true;
+	}
+	
+	/**
+	 * Loads database config into returned object, assuming tables are valid.
+	 * @return Returns null if there was a problem
+	 */
+	public static GlobalConfig loadDatabaseConfig() {
+		if (sqlConnection==null) return null;
+		
+		GlobalConfig config=new GlobalConfig();
+		String configFieldName=null;
+		try {
+			ResultSet rs=sqlConnection.prepareStatement("SELECT * FROM `config`").executeQuery();
+			while (rs.next()) {
+				configFieldName=rs.getString("name");
+				Field field=config.getClass().getField(configFieldName);
+				switch (field.getType().getName()) {
+				case "int": field.set(config, rs.getInt("value")); break;
+				default:
+					throw new Exception("Field type not recognised! ("+field.getType()+")");
+				//case "java.lang.String": break;
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("Error loading config! Field not parsed correctly: \""+configFieldName+"\"");
+			e.printStackTrace();
+			return null;
+		}
+		return config;
 	}
 
 	/**
@@ -142,7 +178,7 @@ public class DatabaseConnector {
 	 * @param config Config being written
 	 * @throws IOException
 	 */
-	private void writeConfig(File file, DatabaseConfig config) throws IOException {
+	private static void writeConfig(File file, DatabaseConfig config) throws IOException {
 		FileOutputStream fos = new FileOutputStream(file);
 		fos.write(
 			new Gson().toJson(config).getBytes()
@@ -156,13 +192,13 @@ public class DatabaseConnector {
 	 * @return new DatabaseConfig with fields initialised
 	 * @throws IOException
 	 */
-	private DatabaseConfig readConfig(File file) throws IOException {
+	private static DatabaseConfig readConfig(File file) throws IOException {
 		String json=new String(Files.readAllBytes(file.toPath()));
 		DatabaseConfig config=new Gson().fromJson(json, DatabaseConfig.class);
 		return config;
 	}
 
-	class DatabaseConfig {
+	public static class DatabaseConfig {
 		String host;
 		String username;
 		String password;
