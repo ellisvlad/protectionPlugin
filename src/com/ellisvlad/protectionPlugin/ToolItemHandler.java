@@ -1,10 +1,12 @@
 package com.ellisvlad.protectionPlugin;
 
+import java.lang.reflect.Field;
+
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -36,8 +38,8 @@ public class ToolItemHandler {
 		Material mat=Material.getMaterial(pc.tool_id);
 		if (mat==null) mat=Material.getMaterial(pc.tool_id);
 		
-		net.minecraft.server.v1_8_R3.ItemStack nis=CraftItemStack.asNMSCopy(
-			new ItemStack(Material.getMaterial(pc.tool_id), 1, (short)pc.tool_data)
+		net.minecraft.server.v1_8_R3.ItemStack nis=getItemStackHandle(
+			CraftItemStack.asCraftCopy(new ItemStack(Material.getMaterial(pc.tool_id), 1, (short)pc.tool_data))
 		);
 		NBTTagCompound tags=new NBTTagCompound();
 		NBTTagCompound displayTag=new NBTTagCompound();
@@ -56,28 +58,57 @@ public class ToolItemHandler {
 		return CraftItemStack.asCraftMirror(nis);
 	}
 	
+	public static void renderIfNecessary(net.minecraft.server.v1_8_R3.ItemStack is, Player p) {
+		NBTTagCompound displayTag=(NBTTagCompound)is.getTag().get("display");
+		displayTag.setString("Name", "§r"+Main.globalConfig.tool_name);
+		NBTTagList loreTag=new NBTTagList();
+		for (String str:Main.globalConfig.tool_description.split("\n")) {
+			loreTag.add(new NBTTagString("§r"+str));
+		}
+		displayTag.set("Lore", loreTag);
+	}
+	
 	public static boolean isToolItem(ItemStack is) {
-		net.minecraft.server.v1_8_R3.ItemStack nis=CraftItemStack.asNMSCopy(is);
+		net.minecraft.server.v1_8_R3.ItemStack nis=getItemStackHandle(is);
 		if (!nis.hasTag()) return false;
 		if (!nis.getTag().hasKey("protectionPluginItem")) return false;
 		return true;
 	}
+	
+	public static net.minecraft.server.v1_8_R3.ItemStack getItemStackHandle(ItemStack is) {
+		try {
+			Field field=CraftItemStack.class.getDeclaredField("handle");
+			field.setAccessible(true);
+			return (net.minecraft.server.v1_8_R3.ItemStack)field.get(is);
+		} catch (Exception e ) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 	public static class EventListener implements Listener {
-
-		public void onPlace(BlockPlaceEvent e) {
-			if (!isToolItem(e.getItemInHand())) return;
-			
-			e.setCancelled(true);
-		}
+		
+		@EventHandler
 		public void onDrop(PlayerDropItemEvent e) {
 			if (!isToolItem(e.getItemDrop().getItemStack())) return;
+			net.minecraft.server.v1_8_R3.ItemStack nis=getItemStackHandle(e.getItemDrop().getItemStack());
+
+			renderIfNecessary(nis, e.getPlayer());
 			
 			e.setCancelled(true);
 		}
+		
+		@EventHandler
 		public void onInteract(PlayerInteractEvent e) {
-			if (e.hasItem() && !isToolItem(e.getItem())) return;
-			if (!isToolItem(e.getPlayer().getItemInHand())) return;
+			ItemStack is;
+			if (e.hasItem())
+				is=e.getItem();
+			else
+				is=e.getPlayer().getItemInHand();
+			if (!isToolItem(is)) return;
+			net.minecraft.server.v1_8_R3.ItemStack nis=getItemStackHandle(is);
+
+			renderIfNecessary(nis, e.getPlayer());
 			
 			e.setCancelled(true);
 		}

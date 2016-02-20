@@ -1,6 +1,5 @@
 package com.ellisvlad.protectionPlugin;
 
-import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -38,7 +37,7 @@ public class EventListener implements Listener {
 			return;
 		}
 		
-		net.minecraft.server.v1_8_R3.ItemStack nis=CraftItemStack.asNMSCopy(event.getPlayer().getItemInHand());
+		net.minecraft.server.v1_8_R3.ItemStack nis=ToolItemHandler.getItemStackHandle(event.getPlayer().getItemInHand());
 		System.out.println(nis.getTag());
 	}
 	
