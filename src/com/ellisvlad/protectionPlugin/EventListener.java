@@ -5,6 +5,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import com.ellisvlad.protectionPlugin.ToolItem.TI_Handler;
 import com.ellisvlad.protectionPlugin.database.DatabaseConnector;
 
 public class EventListener implements Listener {
@@ -32,7 +33,7 @@ public class EventListener implements Listener {
 			return;
 		}
 		if (words[1].toLowerCase().startsWith("t")) { // Tool
-			ToolItemHandler.giveTool(event.getPlayer(), null);
+			TI_Handler.giveTool(event.getPlayer(), null);
 			return;
 		}
 		

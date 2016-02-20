@@ -11,7 +11,7 @@ import com.ellisvlad.protectionPlugin.Logger;
 public class GlobalConfig {
 
 	@saveToDatabase
-	public String default_tool_id;
+	public String default_tool_name;
 	@saveToDatabase
 	public int default_tool_data;
 	@saveToDatabase
@@ -28,13 +28,15 @@ public class GlobalConfig {
 	public String second_point_selected;
 	@saveToDatabase
 	public String cleared_selection;
+	@saveToDatabase
+	public String created_region;
 	
 	protected HashMap<UUID, PlayerConfig> playerConfigCache=new HashMap<>();
 	
 	public void validateConfig() {
-		if (Material.getMaterial(default_tool_id)==null) {
-			Logger.err.println("default_tool_id was invalid! Defaulting to a wooden axe.");
-			default_tool_id=Material.WOOD_AXE.name();
+		if (Material.getMaterial(default_tool_name)==null) {
+			Logger.err.println("default_tool_name was invalid! Defaulting to a wooden axe.");
+			default_tool_name=Material.WOOD_AXE.name();
 		}
 	}
 

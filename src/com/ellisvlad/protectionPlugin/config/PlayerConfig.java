@@ -12,10 +12,10 @@ import com.ellisvlad.protectionPlugin.database.DatabaseConnector;
 public class PlayerConfig {
 	public String tool_id;
 	public int tool_data;
-	public Location point1, point2;
+	public Location points[]=new Location[2];
 
 	public PlayerConfig() {
-		this.tool_id=Main.globalConfig.default_tool_id;
+		this.tool_id=Main.globalConfig.default_tool_name;
 		this.tool_data=Main.globalConfig.default_tool_data;
 	}
 	public PlayerConfig(String tool_id, int tool_data) {
@@ -24,9 +24,7 @@ public class PlayerConfig {
 	}
 
 	public static PlayerConfig getPlayerConfig(GlobalConfig owner, UUID p_uuid) {
-		PlayerConfig ret=null;
-		
-		ret=owner.playerConfigCache.get(p_uuid);
+		PlayerConfig ret=owner.playerConfigCache.get(p_uuid);
 		if (ret!=null) return ret;
 		
 		PreparedStatement ps=null;
@@ -62,7 +60,7 @@ public class PlayerConfig {
 			);
 			ps.setLong(1, p_uuid.getLeastSignificantBits());
 			ps.setLong(2, p_uuid.getMostSignificantBits());
-			ps.setString(3, Main.globalConfig.default_tool_id);
+			ps.setString(3, Main.globalConfig.default_tool_name);
 			ps.setInt(4, Main.globalConfig.default_tool_data);
 			ps.close();
 			

@@ -161,18 +161,26 @@ public final class DatabaseConnector {
 				configStatement.setString(1, "tool_description");
 				configStatement.setString(2,
 					  "Used for selecting regions\n"
-					+ "Left click to select region\n"
-					+ "Right click for gui"
+					+ "§7Left click§r to select region\n"
+					+ "§7Shift + Left click§r to confirm a region\n"
+					+ "§7Right click§r to push a boundry\n"
+					+ "§7Shift + Right click§r for gui"
 				);
 				configStatement.addBatch();
 				configStatement.setString(1, "first_point_selected");
-				configStatement.setString(2, "First point selected");
+				configStatement.setString(2, "Now select a second point");
 				configStatement.addBatch();
 				configStatement.setString(1, "second_point_selected");
-				configStatement.setString(2, "Second point selected");
+				configStatement.setString(2,
+						  "Cool, you have two options now:\n"
+						+ "§7Shift+Left Click§r to create this region\n"
+						+ "§7Left Click§r to clear the selection");
 				configStatement.addBatch();
 				configStatement.setString(1, "cleared_selection");
 				configStatement.setString(2, "Cleared selection");
+				configStatement.addBatch();
+				configStatement.setString(1, "created_region");
+				configStatement.setString(2, "§6Created a region from {pos1} to {pos2} of size {size}!");
 				configStatement.addBatch();
 				configStatement.executeBatch();
 				configStatement.close();

@@ -2,11 +2,16 @@ package com.ellisvlad.protectionPlugin;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_8_R3.CraftChunk;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
@@ -18,6 +23,9 @@ import org.bukkit.inventory.ItemStack;
 
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.Blocks;
+import net.minecraft.server.v1_8_R3.NBTTagCompound;
+import net.minecraft.server.v1_8_R3.NBTTagList;
+import net.minecraft.server.v1_8_R3.NBTTagString;
 import net.minecraft.server.v1_8_R3.Packet;
 import net.minecraft.server.v1_8_R3.PacketPlayOutBlockChange;
 import net.minecraft.server.v1_8_R3.PacketPlayOutMultiBlockChange;
@@ -53,6 +61,34 @@ public class Utils {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public static ItemStack makeItemStack(Material mat, int amount, int damage, String name, String[] lore) {
+		return makeItemStack(mat, amount, damage, name, lore, false);
+	}
+	public static ItemStack makeItemStack(Material mat, int amount, int damage, String name, String[] lore, boolean isPluginItem) {
+		net.minecraft.server.v1_8_R3.ItemStack nis=Utils.getItemStackHandle(
+			CraftItemStack.asCraftCopy(new ItemStack(mat, amount, (short)damage))
+		);
+		NBTTagCompound tags=new NBTTagCompound();
+		NBTTagCompound displayTag=new NBTTagCompound();
+		NBTTagList loreTag=new NBTTagList();
+		if (isPluginItem) {
+			tags.setBoolean("protectionPluginItem", true);
+			tags.setBoolean("Unbreakable", true);
+			tags.setInt("HideFlags", 0b111111);
+		}
+		if (name!=null) displayTag.setString("Name", "§r"+name);
+		if (lore!=null) {
+			for (String str:lore) {
+				loreTag.add(new NBTTagString("§r"+str));
+			}
+		}
+		displayTag.set("Lore", loreTag);
+		tags.set("display", displayTag);
+		nis.setTag(tags);
+		
+		return CraftItemStack.asCraftMirror(nis);
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -130,5 +166,54 @@ public class Utils {
 		}
 	}
 	
+	public static List<Pair<Block, BlockFace>> getDirectionsInRay(List<Block> blocks) {
+		List<Pair<Block, BlockFace>> ret=new ArrayList<>();
+		Block prevBlock=null;
+		for (Block block:blocks) {
+			if (prevBlock!=null) {
+				BlockFace direction = null;
+				Location relPos=block.getLocation().clone().subtract(prevBlock.getLocation());
+				if (relPos.getX()>0) direction=BlockFace.EAST; else if (relPos.getX()<0) direction=BlockFace.WEST;
+				if (relPos.getY()>0) direction=BlockFace.UP; else if (relPos.getY()<0) direction=BlockFace.DOWN;
+				if (relPos.getZ()>0) direction=BlockFace.SOUTH; else if (relPos.getZ()<0) direction=BlockFace.NORTH;
+				ret.add(Pair.of(block, direction));
+			}
+			prevBlock=block;
+		}
+		return ret;
+	}
+	
+	public static List<Pair<Block, BlockFace>> filterBlockDirListToXY(List<Pair<Block, BlockFace>> blocks, int x, int z) {
+		Iterator<Pair<Block, BlockFace>> blocksItr=blocks.iterator();
+		while (blocksItr.hasNext()) {
+			Pair<Block, BlockFace> blockDir=blocksItr.next();
+			if (blockDir.getLeft().getLocation().getBlockX()!=x || blockDir.getLeft().getLocation().getBlockZ()!=z) blocksItr.remove();
+		}
+		return blocks;
+	}
+	
+	public static class delayedBeaconMove extends Thread {
+		
+		Location pos;
+		Player player;
+		BlockFace rel;
+		
+		public delayedBeaconMove(Location pos, Player player, BlockFace rel) {
+			this.pos=pos;
+			this.player=player;
+			this.rel=rel;
+			start();
+		}
+		
+		@Override
+		public void run() {
+			Utils.clearBeaconLine(pos, player);
+			pos=pos.getBlock().getRelative(rel).getLocation();
+			try {Thread.sleep(1000/20);} catch (Exception e) {}; //1 tick
+			Utils.sendBeaconLine(pos, player, DyeColor.YELLOW);
+		}
+		
+	}
+
 }
 
