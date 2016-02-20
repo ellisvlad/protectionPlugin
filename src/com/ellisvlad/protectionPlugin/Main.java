@@ -6,6 +6,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
+import com.ellisvlad.protectionPlugin.Regions.RegionCache;
 import com.ellisvlad.protectionPlugin.Regions.RegionController;
 import com.ellisvlad.protectionPlugin.ToolItem.TI_EventListener;
 import com.ellisvlad.protectionPlugin.config.GlobalConfig;
@@ -16,6 +17,17 @@ public class Main extends JavaPlugin {
 	public static GlobalConfig globalConfig;
 	
 	public static void main(String[] args) { //Test
+		RegionCache cache=new RegionCache();
+		cache.addEntry(5, 9, 0, 0);
+		cache.addEntry(7, 16, 0, 0);
+		cache.addEntry(14, 17, 0, 0);
+		cache.addEntry(18, 22, 0, 0);
+		cache.addEntry(19, 21, 0, 0);
+
+		cache.pack();
+		
+		cache.searchX(10);
+		
 //		GlobalConfig c=new GlobalConfig();
 //		UUID uuid=UUID.randomUUID();
 //		c.getPlayerConfig(uuid);

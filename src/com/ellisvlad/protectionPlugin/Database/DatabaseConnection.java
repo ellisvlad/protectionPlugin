@@ -111,7 +111,7 @@ public final class DatabaseConnection {
 			if (!rows.contains("players")) {
 				Logger.out.println("Creating new players table...");
 				sqlConnection.prepareStatement(
-					"CREATE TABLE `players`("
+					  "CREATE TABLE `players`("
 					+ "`pid` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Unique ID', "
 					+ "`uuidLo` BIGINT NOT NULL COMMENT 'Ingame UUID-Lo', "
 					+ "`uuidHi` BIGINT NOT NULL COMMENT 'Ingame UUID-Hi', "
@@ -126,7 +126,7 @@ public final class DatabaseConnection {
 			if (!rows.contains("config")) {
 				Logger.out.println("Creating new config table...");
 				sqlConnection.prepareStatement(
-					"CREATE TABLE `config` ("
+					  "CREATE TABLE `config` ("
 					+ "`name` VARCHAR(255) NOT NULL,"
 					+ "`value` VARCHAR(1024) NOT NULL COLLATE 'utf8_general_ci'"
 					+ ")"
@@ -193,6 +193,20 @@ public final class DatabaseConnection {
 				configStatement.executeBatch();
 				configStatement.close();
 				Logger.out.println("Created new config table");
+			}
+			if (!rows.contains("regions")) {
+				Logger.out.println("Creating new regions table...");
+				sqlConnection.prepareStatement(
+					  "CREATE TABLE `regions` ("
+					+ "`rid` INT UNSIGNED NOT NULL AUTO_INCREMENT,"
+					+ "`pid` INT UNSIGNED NOT NULL,"
+					+ "`minX` INT NOT NULL,"
+					+ "`maxX` INT NOT NULL,"
+					+ "`minZ` INT NOT NULL,"
+					+ "`maxZ` INT NOT NULL,"
+					+ "PRIMARY KEY (`rid`)"
+					+ ")"
+				).executeUpdate();
 			}
 		} catch (SQLException e) {
 			Logger.err.println("Database init failed!");

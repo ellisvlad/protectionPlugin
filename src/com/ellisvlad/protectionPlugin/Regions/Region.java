@@ -4,7 +4,7 @@ public class Region {
 	
 	int minX, minZ, maxX, maxZ;
 	
-	public Region(int minX, int minZ, int maxX, int maxZ) {
+	protected Region(int minX, int minZ, int maxX, int maxZ) {
 		this.minX=minX;
 		this.minZ=minZ;
 		this.maxX=maxX;
