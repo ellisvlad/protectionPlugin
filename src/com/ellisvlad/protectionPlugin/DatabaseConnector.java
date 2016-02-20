@@ -19,7 +19,7 @@ public class DatabaseConnector {
 	private static Connection sqlConnection = null;
 
 	/**
-	 * Connects to a database using provided database information
+	 * Connects to a database using provided database information.
 	 * @param host Host ip
 	 * @param db Database name
 	 * @param u Username
@@ -30,7 +30,8 @@ public class DatabaseConnector {
 	}
 	
 	/**
-	 *  Loads connection info from file, making a default config file if one doesn't exist
+	 *  Loads connection info from file, making a default config file if one doesn't exist.
+	 *  Then connects to the database.
 	 */
 	public DatabaseConnector() {
 		File file = new File(configFileName);
@@ -84,7 +85,34 @@ public class DatabaseConnector {
 		return false;
 	}
 	
+	/**
+	 * Creates any tables not initialised in the database.
+	 */
 	private void initDatabaseTables() {
+		try {
+			HashSet<String> rows=new HashSet<>();
+			ResultSet rs=sqlConnection.prepareStatement("SHOW TABLE STATUS").executeQuery();
+			while (rs.next()) rows.add(rs.getString("Name"));
+			rs.close();
+			
+			if (!rows.contains("players")) {
+				System.out.println("Creating new players table...");
+				sqlConnection.prepareStatement(
+					"CREATE TABLE `players`("
+					+ "`pid` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Unique ID', "
+					+ "`uuidLo` BIGINT NOT NULL COMMENT 'Ingame UUID-Lo', "
+					+ "`uuidHi` BIGINT NOT NULL COMMENT 'Ingame UUID-Hi', "
+					+ "`tool_id` SMALLINT UNSIGNED NOT NULL COMMENT 'Tool id used for regions', "
+					+ "`tool_data` SMALLINT UNSIGNED NOT NULL COMMENT 'Tool damage value used for regions', "
+					+ "PRIMARY KEY (`pid`)"
+					+ ")"
+				).executeUpdate();
+				System.out.println("Created new players table");
+			}
+		} catch (SQLException e) {
+			System.err.println("Database init!");
+			e.printStackTrace();
+		}
 	}
 
 	/**

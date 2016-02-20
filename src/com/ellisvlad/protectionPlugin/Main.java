@@ -17,6 +17,7 @@ public class Main extends JavaPlugin {
 		plugin = this;
 		PluginManager pm = Bukkit.getPluginManager();
 		pm.registerEvents(new EventListener(), this);
+		new DatabaseConnector();
 	}
 	
 	@Override
