@@ -17,13 +17,11 @@ import com.ellisvlad.protectionPlugin.config.GlobalConfig;
 import com.ellisvlad.protectionPlugin.config.saveToDatabase;
 import com.google.gson.Gson;
 
-public final class DatabaseConnector {
+public final class DatabaseConnection {
 	
 	private static final String configFileName = "ProtectionSqlConnection.json";
 
-	private static Connection sqlConnection = null;
-
-	private DatabaseConnector() {}
+	private Connection sqlConnection = null;
 
 	/**
 	 * Connects to a database using provided database information.
@@ -33,16 +31,17 @@ public final class DatabaseConnector {
 	 * @param u Username
 	 * @param p Password
 	 */
-	public static boolean init(DatabaseConfig config) {
-		return initConnection(config);
+	public DatabaseConnection(DatabaseConfig config) {
+		initConnection(config);
 	}
 	
 	/**
 	 *  Loads connection info from file, making a default config file if one doesn't exist.
 	 *  Then connects to the database.
-	 * @return Returns false if there was an error
 	 */
-	public static boolean init() {
+	public DatabaseConnection() {
+		if (isConnected()) return;
+		
 		File file = new File(configFileName);
 		if (!file.exists()) {
 			try {
@@ -50,7 +49,7 @@ public final class DatabaseConnector {
 			} catch (IOException e) {
 				Logger.err.println("Failed to create default database config!");
 				e.printStackTrace();
-				return false;
+				return;
 			}
 		}
 		
@@ -60,9 +59,9 @@ public final class DatabaseConnector {
 		} catch (IOException e) {
 			Logger.err.println("Failed to load database config!");
 			e.printStackTrace();
-			return false;
+			return;
 		}
-		return initConnection(config);
+		initConnection(config);
 	}
 	
 	/**
@@ -70,7 +69,9 @@ public final class DatabaseConnector {
 	 * @return False if the connection failed or if already connected
 	 * @param config DatabaseConfig to connect with
 	 */
-	private static boolean initConnection(DatabaseConfig config) {
+	private boolean initConnection(DatabaseConfig config) {
+		if (isConnected()) return false;
+		
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 		} catch (Exception e) {
@@ -98,7 +99,9 @@ public final class DatabaseConnector {
 	 * Creates any tables not initialised in the database.
 	 * @return 
 	 */
-	private static boolean initDatabaseTables() {
+	private boolean initDatabaseTables() {
+		if (!isConnected()) return false;
+		
 		try {
 			HashSet<String> rows=new HashSet<>();
 			ResultSet rs=sqlConnection.prepareStatement("SHOW TABLE STATUS").executeQuery();
@@ -203,8 +206,8 @@ public final class DatabaseConnector {
 	 * Loads database config into returned object, assuming tables are valid.
 	 * @return Returns null if there was a problem
 	 */
-	public static GlobalConfig loadDatabaseConfig() {
-		if (sqlConnection==null) return null;
+	public GlobalConfig loadDatabaseConfig() {
+		if (!isConnected()) return null;
 		
 		GlobalConfig config=new GlobalConfig();
 		String configFieldName=null;
@@ -236,8 +239,8 @@ public final class DatabaseConnector {
 	 * Saves database config assuming tables are valid.
 	 * @return Returns false if there was a problem
 	 */
-	public static boolean saveDatabaseConfig(GlobalConfig config) {
-		if (sqlConnection==null) return false;
+	public boolean saveDatabaseConfig(GlobalConfig config) {
+		if (!isConnected()) return false;
 		
 		String configFieldName=null;
 		try {
@@ -264,7 +267,7 @@ public final class DatabaseConnector {
 	 * @param config Config being written
 	 * @throws IOException
 	 */
-	private static void writeConfig(File file, DatabaseConfig config) throws IOException {
+	private void writeConfig(File file, DatabaseConfig config) throws IOException {
 		FileOutputStream fos = new FileOutputStream(file);
 		fos.write(
 			new Gson().toJson(config).getBytes()
@@ -278,14 +281,18 @@ public final class DatabaseConnector {
 	 * @return new DatabaseConfig with fields initialised
 	 * @throws IOException
 	 */
-	private static DatabaseConfig readConfig(File file) throws IOException {
+	private DatabaseConfig readConfig(File file) throws IOException {
 		String json=new String(Files.readAllBytes(file.toPath()));
 		DatabaseConfig config=new Gson().fromJson(json, DatabaseConfig.class);
 		return config;
 	}
 
-	public static PreparedStatement prepareStatement(String sql) throws Exception {
-		if (sqlConnection==null) throw new Exception("Preparing query failed! Not connected to a database!");
+	public PreparedStatement prepareStatement(String sql) throws Exception {
+		if (!isConnected()) throw new Exception("Preparing query failed! Not connected to a database!");
 		return sqlConnection.prepareStatement(sql);
+	}
+	
+	public boolean isConnected() {
+		return (sqlConnection==null);
 	}
 }

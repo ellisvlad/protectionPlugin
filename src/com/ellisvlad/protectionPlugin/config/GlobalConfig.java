@@ -7,6 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import com.ellisvlad.protectionPlugin.Logger;
+import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
+import com.ellisvlad.protectionPlugin.Regions.RegionController;
 
 public class GlobalConfig {
 
@@ -30,6 +32,9 @@ public class GlobalConfig {
 	public String cleared_selection;
 	@saveToDatabase
 	public String created_region;
+
+	public DatabaseConnection dbConnection;
+	public RegionController regionController;
 	
 	protected HashMap<UUID, PlayerConfig> playerConfigCache=new HashMap<>();
 	

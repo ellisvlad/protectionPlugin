@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.bukkit.Location;
 
 import com.ellisvlad.protectionPlugin.Main;
-import com.ellisvlad.protectionPlugin.Database.DatabaseConnector;
+import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
 
 public class PlayerConfig {
 	public String tool_id;
@@ -29,7 +29,7 @@ public class PlayerConfig {
 		
 		PreparedStatement ps=null;
 		try {
-			ps=DatabaseConnector.prepareStatement(
+			ps=Main.globalConfig.dbConnection.prepareStatement(
 				"SELECT * FROM `players` WHERE `uuidLo`=? AND `uuidHi`=?"
 			);
 			ps.setLong(1, p_uuid.getLeastSignificantBits());
@@ -55,7 +55,7 @@ public class PlayerConfig {
 
 	public static PlayerConfig makeDefaultConfig(UUID p_uuid) {
 		try {
-			PreparedStatement ps=DatabaseConnector.prepareStatement(
+			PreparedStatement ps=Main.globalConfig.dbConnection.prepareStatement(
 				"INSERT INTO `players`(`uuidLo`, `uuidHi`, `tool_id`, `tool_data`) VALUES (?, ?, ?, ?)"
 			);
 			ps.setLong(1, p_uuid.getLeastSignificantBits());

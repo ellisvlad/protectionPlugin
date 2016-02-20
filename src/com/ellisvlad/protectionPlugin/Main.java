@@ -5,7 +5,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.ellisvlad.protectionPlugin.Database.DatabaseConnector;
+import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
+import com.ellisvlad.protectionPlugin.Regions.RegionController;
 import com.ellisvlad.protectionPlugin.ToolItem.TI_EventListener;
 import com.ellisvlad.protectionPlugin.config.GlobalConfig;
 
@@ -33,16 +34,20 @@ public class Main extends JavaPlugin {
 
 		Logger.out.println("Initialising...");
 		Long startTime=System.currentTimeMillis();
-		DatabaseConnector.init();
-		globalConfig=DatabaseConnector.loadDatabaseConfig();
+		DatabaseConnection dbConnection=new DatabaseConnection();
+		globalConfig=dbConnection.loadDatabaseConfig();
 		if (globalConfig==null) {
 			Logger.err.println("Something went wrong when initialising database! Cannot continue!");
 			return;
 		}
+		globalConfig.dbConnection=dbConnection;
 		
 		PluginManager pm = Bukkit.getPluginManager();
 		pm.registerEvents(new CommandListener(), this);
 		pm.registerEvents(new TI_EventListener(), this);
+		
+		globalConfig.regionController=new RegionController();
+		
 		Logger.out.println("All OK after "+(System.currentTimeMillis()-startTime)+"ms");
 	}
 	
