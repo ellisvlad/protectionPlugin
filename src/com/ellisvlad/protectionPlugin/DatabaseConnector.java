@@ -120,7 +120,7 @@ public final class DatabaseConnector {
 				sqlConnection.prepareStatement(
 					"CREATE TABLE `config` ("
 					+ "`name` VARCHAR(255) NOT NULL,"
-					+ "`value` VARCHAR(255) NOT NULL"
+					+ "`value` VARCHAR(1024) NOT NULL"
 					+ ")"
 				).executeUpdate();
 				PreparedStatement configStatement=sqlConnection.prepareStatement(
@@ -131,6 +131,15 @@ public final class DatabaseConnector {
 				configStatement.addBatch();
 				configStatement.setString(1, "default_tool_data");
 				configStatement.setString(2, "4"); //TODO: Yellow.. -1
+				configStatement.addBatch();
+				configStatement.setString(1, "welcome_message");
+				configStatement.setString(2, 
+					  "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §nProtection Plugin§r §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥\n\n"
+					+ "  §oWritten by Ellis for WrathPVP\n"
+					+ "§4⬥ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬥\n"
+					+ "  §oUse §6§o/p§7§o[rotect]§r§o to get started!\n"
+					+ "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥\n"
+				);
 				configStatement.addBatch();
 				configStatement.executeBatch();
 				Logger.out.println("Created new config table");
@@ -158,10 +167,10 @@ public final class DatabaseConnector {
 				configFieldName=rs.getString("name");
 				Field field=config.getClass().getField(configFieldName);
 				switch (field.getType().getName()) {
-				case "int": field.set(config, rs.getInt("value")); break;
+				case "int":					field.set(config, rs.getInt("value"));		break;
+				case "java.lang.String":	field.set(config, rs.getString("value"));	break;
 				default:
 					throw new Exception("Field type not recognised! ("+field.getType()+")");
-				//case "java.lang.String": break;
 				}
 			}
 		} catch (Exception e) {
