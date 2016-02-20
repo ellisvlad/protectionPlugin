@@ -8,6 +8,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Main extends JavaPlugin {
 	public static Plugin plugin;
 	
+	public static void main(String[] args) { //Test
+		new DatabaseConnector();
+	}
+	
 	@Override
 	public void onEnable() {
 		plugin = this;
