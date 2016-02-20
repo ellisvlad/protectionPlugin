@@ -1,4 +1,4 @@
-package com.ellisvlad.protectionPlugin;
+package com.ellisvlad.protectionPlugin.database;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,6 +12,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 
+import com.ellisvlad.protectionPlugin.Logger;
+import com.ellisvlad.protectionPlugin.config.GlobalConfig;
+import com.ellisvlad.protectionPlugin.config.saveToDatabase;
 import com.google.gson.Gson;
 
 public final class DatabaseConnector {
@@ -77,7 +80,7 @@ public final class DatabaseConnector {
 		
 		if (sqlConnection==null) {
 			try {
-				sqlConnection = DriverManager.getConnection("jdbc:mysql://"+config.host+":3306/"+config.db, config.username, config.password);
+				sqlConnection = DriverManager.getConnection("jdbc:mysql://"+config.host+":3306/"+config.db+"?characterEncoding=UTF-8", config.username, config.password);
 			} catch (SQLException e) {
 				Logger.err.println("Could not connect to "+config.host+"/"+config.db+" using login "+config.username);
 				e.printStackTrace();
@@ -85,7 +88,8 @@ public final class DatabaseConnector {
 			}
 			
 			// Connected OK!
-			return initDatabaseTables();
+			if (!initDatabaseTables()) return false;
+			new Thread(new KeepAlive(sqlConnection), "Mysql Pinger").start();
 		}
 		return false;
 	}
@@ -108,9 +112,10 @@ public final class DatabaseConnector {
 					+ "`pid` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Unique ID', "
 					+ "`uuidLo` BIGINT NOT NULL COMMENT 'Ingame UUID-Lo', "
 					+ "`uuidHi` BIGINT NOT NULL COMMENT 'Ingame UUID-Hi', "
-					+ "`tool_id` SMALLINT UNSIGNED NOT NULL COMMENT 'Tool id used for regions', "
+					+ "`tool_id` VARCHAR(50) NOT NULL COMMENT 'Tool id used for regions', "
 					+ "`tool_data` SMALLINT NOT NULL COMMENT 'Tool damage value used for regions', "
-					+ "PRIMARY KEY (`pid`)"
+					+ "PRIMARY KEY (`pid`),"
+					+ "UNIQUE INDEX `uuidLo_uuidHi` (`uuidLo`, `uuidHi`)"
 					+ ")"
 				).executeUpdate();
 				Logger.out.println("Created new players table");
@@ -120,14 +125,14 @@ public final class DatabaseConnector {
 				sqlConnection.prepareStatement(
 					"CREATE TABLE `config` ("
 					+ "`name` VARCHAR(255) NOT NULL,"
-					+ "`value` VARCHAR(1024) NOT NULL"
+					+ "`value` VARCHAR(1024) NOT NULL COLLATE 'utf8_general_ci'"
 					+ ")"
 				).executeUpdate();
 				PreparedStatement configStatement=sqlConnection.prepareStatement(
 					"INSERT INTO `config` (`name`, `value`) VALUES (?, ?)"
 				);
-				configStatement.setString(1, "default_tool_id");
-				configStatement.setString(2, "35"); //TODO: Wool.. 271
+				configStatement.setString(1, "default_tool_name");
+				configStatement.setString(2, "WOOL"); //TODO: Wool.. 271
 				configStatement.addBatch();
 				configStatement.setString(1, "default_tool_data");
 				configStatement.setString(2, "4"); //TODO: Yellow.. -1
@@ -141,7 +146,17 @@ public final class DatabaseConnector {
 					+ "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥\n"
 				);
 				configStatement.addBatch();
+				configStatement.setString(1, "help_message");
+				configStatement.setString(2, 
+					  "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §nHelp§r §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥\n\n"
+					+ "  §oWritten by Ellis for WrathPVP\n"
+					+ "§4⬥ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬥\n"
+					+ "  §oUse §6§o/p§7§o[rotect]§r§o to get started!\n"
+					+ "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥\n"
+				);
+				configStatement.addBatch();
 				configStatement.executeBatch();
+				configStatement.close();
 				Logger.out.println("Created new config table");
 			}
 		} catch (SQLException e) {
@@ -166,6 +181,9 @@ public final class DatabaseConnector {
 			while (rs.next()) {
 				configFieldName=rs.getString("name");
 				Field field=config.getClass().getField(configFieldName);
+				if (field.getAnnotation(saveToDatabase.class)==null) {
+					throw new Exception("Field is not a value that can be loaded! ("+configFieldName+")");
+				}
 				switch (field.getType().getName()) {
 				case "int":					field.set(config, rs.getInt("value"));		break;
 				case "java.lang.String":	field.set(config, rs.getString("value"));	break;
@@ -178,7 +196,34 @@ public final class DatabaseConnector {
 			e.printStackTrace();
 			return null;
 		}
+		config.validateConfig();
 		return config;
+	}
+	
+	/**
+	 * Saves database config assuming tables are valid.
+	 * @return Returns false if there was a problem
+	 */
+	public static boolean saveDatabaseConfig(GlobalConfig config) {
+		if (sqlConnection==null) return false;
+		
+		String configFieldName=null;
+		try {
+			PreparedStatement updateStatement=sqlConnection.prepareStatement("UPDATE `config` SET `value`=? WHERE `name`=? LIMIT 1");
+			for (Field field:config.getClass().getFields()) {
+				if (field.getAnnotation(saveToDatabase.class)==null) continue;
+				updateStatement.setString(1, (String)field.get(config));
+				updateStatement.setString(2, field.getName());
+				updateStatement.addBatch();
+			}
+			updateStatement.executeBatch();
+			updateStatement.close();
+		} catch (Exception e) {
+			Logger.err.println("Error saving config! Field not parsed correctly: \""+configFieldName+"\"");
+			e.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -207,43 +252,8 @@ public final class DatabaseConnector {
 		return config;
 	}
 
-	public static class DatabaseConfig {
-		String host;
-		String username;
-		String password;
-		String db;
-		
-		private DatabaseConfig() {
-			this.host="127.0.0.1";
-			this.username="protectUser";
-			this.password="protectPassword";
-			this.db="protect";
-		}
-
-		public DatabaseConfig(String host, String db, String u, String p) {
-			this.host=host;
-			this.username=u;
-			this.password=p;
-			this.db=db;
-		}
-	}
-
-	private class KeepAlive implements Runnable {
-		@Override
-		public void run() {
-			while (true) {
-				synchronized (sqlConnection) {
-					if (sqlConnection==null) return;
-					try {
-						sqlConnection.prepareStatement("SELECT 1").executeQuery().close();
-					} catch (SQLException e) {
-						Logger.err.println("Database ping failed!");
-					}
-				}
-				try {
-					Thread.sleep(150000); // 150 sec
-				} catch (InterruptedException e) {return;}
-			}
-		}
+	public static PreparedStatement prepareStatement(String sql) throws Exception {
+		if (sqlConnection==null) throw new Exception("Preparing query failed! Not connected to a database!");
+		return sqlConnection.prepareStatement(sql);
 	}
 }

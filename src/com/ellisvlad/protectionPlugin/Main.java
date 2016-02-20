@@ -5,18 +5,25 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.ellisvlad.protectionPlugin.config.GlobalConfig;
+import com.ellisvlad.protectionPlugin.database.DatabaseConnector;
+
 public class Main extends JavaPlugin {
 	
 	public static Plugin plugin;
 	public static GlobalConfig globalConfig;
 	
 	public static void main(String[] args) { //Test
-		DatabaseConnector.init();
-		globalConfig=DatabaseConnector.loadDatabaseConfig();
-		if (globalConfig==null) {
-			System.err.println("Something went wrong when initialising database! Cannot continue!");
-			return;
-		}
+//		GlobalConfig c=new GlobalConfig();
+//		UUID uuid=UUID.randomUUID();
+//		c.getPlayerConfig(uuid);
+		
+//		DatabaseConnector.init();
+//		globalConfig=DatabaseConnector.loadDatabaseConfig();
+//		if (globalConfig==null) {
+//			System.err.println("Something went wrong when initialising database! Cannot continue!");
+//			return;
+//		}
 	}
 	
 	@Override
