@@ -1,4 +1,4 @@
-package com.ellisvlad.protectionPlugin.database;
+package com.ellisvlad.protectionPlugin.Database;
 
 import java.sql.Connection;
 import java.sql.SQLException;

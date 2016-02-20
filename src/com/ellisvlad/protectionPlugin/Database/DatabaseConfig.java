@@ -1,4 +1,4 @@
-package com.ellisvlad.protectionPlugin.database;
+package com.ellisvlad.protectionPlugin.Database;
 
 public class DatabaseConfig {
 	String host;

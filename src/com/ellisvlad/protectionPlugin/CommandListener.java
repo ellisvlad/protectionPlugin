@@ -6,9 +6,8 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import com.ellisvlad.protectionPlugin.ToolItem.TI_Handler;
-import com.ellisvlad.protectionPlugin.database.DatabaseConnector;
 
-public class EventListener implements Listener {
+public class CommandListener implements Listener {
 
 	@EventHandler
 	public void onLogin(PlayerJoinEvent event) {
@@ -21,12 +20,6 @@ public class EventListener implements Listener {
 		if (!event.getMessage().toLowerCase().startsWith("/p") && !event.getMessage().toLowerCase().startsWith("/protect")) return;
 		event.setCancelled(true);
 		String[] words=event.getMessage().split(" ");
-		Main.globalConfig=DatabaseConnector.loadDatabaseConfig();
-		
-		Main.globalConfig.help_message="§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §nHelp§r §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥\n\n"
-				+ "  §6§o/p§7§orotect help§r Show this help\n"
-				+ "  §6§o/p§7§orotect §6§ot§7§oool§r Aquire tool\n"
-				+ "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥\n";
 		
 		if (words.length<=1 || words[1].equalsIgnoreCase("help")) { // Help
 			Utils.sendMessageNewLines(event.getPlayer(), Main.globalConfig.help_message);

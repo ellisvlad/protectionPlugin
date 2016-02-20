@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.bukkit.Location;
 
 import com.ellisvlad.protectionPlugin.Main;
-import com.ellisvlad.protectionPlugin.database.DatabaseConnector;
+import com.ellisvlad.protectionPlugin.Database.DatabaseConnector;
 
 public class PlayerConfig {
 	public String tool_id;

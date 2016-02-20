@@ -34,13 +34,13 @@ public class TI_BeaconManager {
 
 			if (player.isSneaking()) {
 				//createRegion();
-				double size=0;
+				int size=0;
 				size+=Math.abs(pConfig.points[0].getBlockX() - pConfig.points[1].getBlockX())+1;
 				size*=Math.abs(pConfig.points[0].getBlockZ() - pConfig.points[1].getBlockZ())+1;
 				Utils.sendMessageNewLines(player,
 					Main.globalConfig.created_region
-						.replace("{pos1}", pConfig.points[0].toString())
-						.replace("{pos2}", pConfig.points[1].toString())
+						.replace("{pos1}", "["+pConfig.points[0].getBlockX()+","+pConfig.points[0].getBlockY()+","+pConfig.points[0].getBlockZ()+"]")
+						.replace("{pos2}", "["+pConfig.points[1].getBlockX()+","+pConfig.points[1].getBlockY()+","+pConfig.points[1].getBlockZ()+"]")
 						.replace("{size}", ""+size)
 				);
 			} else { //Clear

@@ -5,9 +5,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.ellisvlad.protectionPlugin.Database.DatabaseConnector;
 import com.ellisvlad.protectionPlugin.ToolItem.TI_EventListener;
 import com.ellisvlad.protectionPlugin.config.GlobalConfig;
-import com.ellisvlad.protectionPlugin.database.DatabaseConnector;
 
 public class Main extends JavaPlugin {
 	
@@ -41,7 +41,7 @@ public class Main extends JavaPlugin {
 		}
 		
 		PluginManager pm = Bukkit.getPluginManager();
-		pm.registerEvents(new EventListener(), this);
+		pm.registerEvents(new CommandListener(), this);
 		pm.registerEvents(new TI_EventListener(), this);
 		Logger.out.println("All OK after "+(System.currentTimeMillis()-startTime)+"ms");
 	}

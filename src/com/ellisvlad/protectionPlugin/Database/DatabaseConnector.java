@@ -1,4 +1,4 @@
-package com.ellisvlad.protectionPlugin.database;
+package com.ellisvlad.protectionPlugin.Database;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -149,10 +149,15 @@ public final class DatabaseConnector {
 				configStatement.setString(1, "help_message");
 				configStatement.setString(2, 
 					  "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §nHelp§r §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥\n\n"
-					+ "  §oWritten by Ellis for WrathPVP\n"
-					+ "§4⬥ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬦ §6⬦ §4⬥\n"
-					+ "  §oUse §6§o/p§7§o[rotect]§r§o to get started!\n"
+					+ "  §6§o/p§7§orotect help§r Show this help\n"
+					+ "  §6§o/p§7§orotect §6§ot§7§oool§r Aquire tool\n"
 					+ "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥\n"
+					+ "  Tool controls:\n"
+					+ "  §7Left click§r to select region\n"
+					+ "  §7Shift + Left click§r to confirm a region\n"
+					+ "  §7Right click§r to push a boundry\n"
+					+ "  §7Shift + Right click§r for gui\n"
+					+ "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥"
 				);
 				configStatement.addBatch();
 				configStatement.setString(1, "tool_name");
