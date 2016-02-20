@@ -4,12 +4,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.UUID;
 
+import org.bukkit.Location;
+
 import com.ellisvlad.protectionPlugin.Main;
 import com.ellisvlad.protectionPlugin.database.DatabaseConnector;
 
 public class PlayerConfig {
 	public String tool_id;
 	public int tool_data;
+	public Location point1, point2;
 
 	public PlayerConfig() {
 		this.tool_id=Main.globalConfig.default_tool_id;
@@ -35,12 +38,15 @@ public class PlayerConfig {
 			ps.setLong(2, p_uuid.getMostSignificantBits());
 			ResultSet rs=ps.executeQuery();
 			if (!rs.next()) { // Not in database!
-				return makeDefaultConfig(p_uuid);
+				ret=makeDefaultConfig(p_uuid);
+			} else {
+				ret=new PlayerConfig(
+					rs.getString("tool_id"),
+					rs.getInt("tool_data")
+				);
 			}
-			return new PlayerConfig(
-				rs.getString("tool_id"),
-				rs.getInt("tool_data")
-			);
+			owner.playerConfigCache.put(p_uuid, ret);
+			return ret;
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

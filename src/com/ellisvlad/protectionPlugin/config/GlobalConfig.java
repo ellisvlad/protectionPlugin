@@ -22,6 +22,12 @@ public class GlobalConfig {
 	public String tool_name;
 	@saveToDatabase
 	public String tool_description;
+	@saveToDatabase
+	public String first_point_selected;
+	@saveToDatabase
+	public String second_point_selected;
+	@saveToDatabase
+	public String cleared_selection;
 	
 	protected HashMap<UUID, PlayerConfig> playerConfigCache=new HashMap<>();
 	

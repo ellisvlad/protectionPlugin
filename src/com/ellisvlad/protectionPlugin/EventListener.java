@@ -1,6 +1,5 @@
 package com.ellisvlad.protectionPlugin;
 
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -12,7 +11,7 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onLogin(PlayerJoinEvent event) {
-		sendMessageNewLines(event.getPlayer(), Main.globalConfig.welcome_message);
+		Utils.sendMessageNewLines(event.getPlayer(), Main.globalConfig.welcome_message);
 		event.setJoinMessage("");
 	}
 	
@@ -29,7 +28,7 @@ public class EventListener implements Listener {
 				+ "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥\n";
 		
 		if (words.length<=1 || words[1].equalsIgnoreCase("help")) { // Help
-			sendMessageNewLines(event.getPlayer(), Main.globalConfig.help_message);
+			Utils.sendMessageNewLines(event.getPlayer(), Main.globalConfig.help_message);
 			return;
 		}
 		if (words[1].toLowerCase().startsWith("t")) { // Tool
@@ -37,14 +36,8 @@ public class EventListener implements Listener {
 			return;
 		}
 		
-		net.minecraft.server.v1_8_R3.ItemStack nis=ToolItemHandler.getItemStackHandle(event.getPlayer().getItemInHand());
+		net.minecraft.server.v1_8_R3.ItemStack nis=Utils.getItemStackHandle(event.getPlayer().getItemInHand());
 		System.out.println(nis.getTag());
-	}
-	
-	private void sendMessageNewLines(Player p, String str) {
-		for (String line:str.split("\n")) {
-			p.sendMessage(line);
-		}
 	}
 
 }

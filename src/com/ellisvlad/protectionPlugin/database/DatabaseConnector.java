@@ -165,6 +165,15 @@ public final class DatabaseConnector {
 					+ "Right click for gui"
 				);
 				configStatement.addBatch();
+				configStatement.setString(1, "first_point_selected");
+				configStatement.setString(2, "First point selected");
+				configStatement.addBatch();
+				configStatement.setString(1, "second_point_selected");
+				configStatement.setString(2, "Second point selected");
+				configStatement.addBatch();
+				configStatement.setString(1, "cleared_selection");
+				configStatement.setString(2, "Cleared selection");
+				configStatement.addBatch();
 				configStatement.executeBatch();
 				configStatement.close();
 				Logger.out.println("Created new config table");
