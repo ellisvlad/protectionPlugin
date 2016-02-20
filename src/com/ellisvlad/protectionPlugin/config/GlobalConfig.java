@@ -18,6 +18,10 @@ public class GlobalConfig {
 	public String welcome_message;
 	@saveToDatabase
 	public String help_message;
+	@saveToDatabase
+	public String tool_name;
+	@saveToDatabase
+	public String tool_description;
 	
 	protected HashMap<UUID, PlayerConfig> playerConfigCache=new HashMap<>();
 	

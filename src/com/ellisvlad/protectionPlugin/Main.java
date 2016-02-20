@@ -41,6 +41,7 @@ public class Main extends JavaPlugin {
 		
 		PluginManager pm = Bukkit.getPluginManager();
 		pm.registerEvents(new EventListener(), this);
+		pm.registerEvents(new ToolItemHandler.EventListener(), this);
 		Logger.out.println("All OK after "+(System.currentTimeMillis()-startTime)+"ms");
 	}
 	

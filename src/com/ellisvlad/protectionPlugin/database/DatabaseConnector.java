@@ -155,6 +155,16 @@ public final class DatabaseConnector {
 					+ "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥\n"
 				);
 				configStatement.addBatch();
+				configStatement.setString(1, "tool_name");
+				configStatement.setString(2, "§6Protection Tool");
+				configStatement.addBatch();
+				configStatement.setString(1, "tool_description");
+				configStatement.setString(2,
+					  "Used for selecting regions\n"
+					+ "Left click to select region\n"
+					+ "Right click for gui"
+				);
+				configStatement.addBatch();
 				configStatement.executeBatch();
 				configStatement.close();
 				Logger.out.println("Created new config table");
