@@ -1,103 +1,66 @@
 package com.ellisvlad.protectionPlugin.Regions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.Sets;
+import com.google.common.collect.TreeRangeSet;
 
 public class RegionCache {
 	
-	public CacheTreeNode cacheLookupMap[]=new CacheTreeNode[4];
-
-	private class CacheEntry {
-		int regionCoordKey[];
-		
-		CacheEntry(int minX, int maxX, int minZ, int maxZ) {
-			this.regionCoordKey=new int[]{minX,maxX, minZ,maxZ};
-		}
-		
-		@Override
-		public String toString() {
-			return "{"+regionCoordKey[0]+","+regionCoordKey[1]+"}";
-		}
+	public List<Map<Integer, Region>> sortedMaps=new ArrayList<Map<Integer, Region>>();
+	
+	public RegionCache() {
+		sortedMaps.add(new TreeMap<Integer, Region>());
+		sortedMaps.add(new TreeMap<Integer, Region>());
+		sortedMaps.add(new TreeMap<Integer, Region>());
+		sortedMaps.add(new TreeMap<Integer, Region>());
 	}
 	
-	private class CacheTreeNode {
-		CacheEntry value;
-		CacheTreeNode branches[]=new CacheTreeNode[2], parent;
-		
-		CacheTreeNode(CacheEntry value, CacheTreeNode left, CacheTreeNode right, CacheTreeNode parent) {
-			this.value=value;
-			this.branches[0]=left;
-			this.branches[1]=right;
-		}
-		
-		@Override
-		public String toString() {
-			CacheEntry[] ordered=traverse(this);
-			String ret="";
-			for (CacheEntry e:ordered) ret+=e;
-			return ret;
-		}
+	public void addEntry(int minX, int maxX, int minZ, int maxZ) {
+		Region region=new Region(minX, minZ, maxX, maxZ);
+		sortedMaps.get(0).put(minX, region);
+		sortedMaps.get(1).put(maxX, region);
+		sortedMaps.get(2).put(minZ, region);
+		sortedMaps.get(3).put(maxZ, region);
+	}
+	
+	private int binarySearch(Integer[] set, int value) {
+		int iLow=0;
+        int iHigh=set.length-1;
+        int iMid=0;
+        while (iLow<=iHigh) {
+        	iMid=(iHigh+iLow)/2;
+            if (value < set[iMid]) iHigh=iMid-1; else
+            if (value > set[iMid]) iLow =iMid+1; else return iMid;
+        }
+		return iLow;
 	}
 
-	private CacheTreeNode insert(int mapId, CacheEntry value) {
-		CacheTreeNode treeEl=cacheLookupMap[mapId];
-		if (treeEl==null) return new CacheTreeNode(value, null, null, null);
-		
-		while (true) {
-			int branchId=(value.regionCoordKey[mapId] > treeEl.value.regionCoordKey[mapId] ? 1 : 0);
-			if (treeEl.branches[branchId]==null) {
-				treeEl.branches[branchId]=new CacheTreeNode(value, null, null, treeEl);
-				return cacheLookupMap[mapId];
+	public int getRegionsAt(int x) {
+		Integer[][] xSets=new Integer[][] {
+			sortedMaps.get(0).keySet().toArray(new Integer[sortedMaps.get(0).size()]),
+			sortedMaps.get(1).keySet().toArray(new Integer[sortedMaps.get(1).size()])
+		};
+		int[] indexLimits=new int[]{
+			binarySearch(xSets[0], x),
+			binarySearch(xSets[1], x)
+		};
+		if (indexLimits[0] < xSets[1].length-indexLimits[1]) { //Work with mins
+			for (int i=0; i!=indexLimits[workingIndex])	{
+				
 			}
-			treeEl=treeEl.branches[branchId];
+		} else { //Work with maxs
+			
 		}
+		return -1;
 	}
 	
-	public void addEntry(int minX, int minZ, int maxX, int maxZ) {
-		for (int mapId=0; mapId!=4; mapId++) {
-			cacheLookupMap[mapId]=insert(mapId, new CacheEntry(minX, minZ, maxX, maxZ));
-		}
-	}
-	
-	public void searchX(int val) {
-		CacheTreeNode tree=cacheLookupMap[0];
-		while (tree.value.regionCoordKey[0] > val) {
-			if (tree.branches[0]!=null) tree=tree.branches[0]; else ;//TODO
-		}
-	}
-
-	private CacheEntry[] traverse(CacheTreeNode tree) {
-		if (tree==null) return new CacheEntry[0];
-		
-		LinkedList<CacheEntry> ret=new LinkedList<>();
-		ret.addAll(Arrays.asList(traverse(tree.branches[0])));
-		ret.add(tree.value);
-		ret.addAll(Arrays.asList(traverse(tree.branches[1])));
-		return ret.toArray(new CacheEntry[ret.size()]);
-	}
-	
-	private CacheTreeNode buildTree(CacheEntry[] orderedEntries, int iLow, int iHigh) {
-		if (iLow==iHigh) return null;
-		
-		return new CacheTreeNode(
-			orderedEntries[(iLow+iHigh)/2],
-			buildTree(
-				orderedEntries,
-				iLow,
-				(iLow+iHigh)/2
-			), buildTree(
-				orderedEntries,
-				(iLow+iHigh)/2+1,
-				iHigh
-			),
-			null);
-	}
-	
-	public void pack() {
-		for (int mapId=0; mapId!=4; mapId++) {
-			CacheEntry[] ordered=traverse(cacheLookupMap[mapId]);
-			cacheLookupMap[mapId]=buildTree(ordered, 0, ordered.length);
-		}
-	}
-
 }

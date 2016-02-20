@@ -1,11 +1,14 @@
 package com.ellisvlad.protectionPlugin;
 
+import java.util.Map.Entry;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
+import com.ellisvlad.protectionPlugin.Regions.Region;
 import com.ellisvlad.protectionPlugin.Regions.RegionCache;
 import com.ellisvlad.protectionPlugin.Regions.RegionController;
 import com.ellisvlad.protectionPlugin.ToolItem.TI_EventListener;
@@ -24,9 +27,7 @@ public class Main extends JavaPlugin {
 		cache.addEntry(18, 22, 0, 0);
 		cache.addEntry(19, 21, 0, 0);
 
-		cache.pack();
-		
-		cache.searchX(10);
+		cache.getRegionsAt(10);
 		
 //		GlobalConfig c=new GlobalConfig();
 //		UUID uuid=UUID.randomUUID();
