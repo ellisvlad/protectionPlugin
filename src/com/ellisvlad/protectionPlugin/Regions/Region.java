@@ -1,6 +1,10 @@
 package com.ellisvlad.protectionPlugin.Regions;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.entity.Player;
@@ -53,11 +57,19 @@ public class Region {
 		return (x>=minX && x<=maxX && z>=minZ && z<=maxZ);
 	}
 
+	public int getId() {
+		return regionId;
+	}
+
 	public int getSize() {
 		int size=0;
 		size+=maxX - minX+1;
 		size*=maxZ - minZ+1;
 		return size;
+	}
+
+	public RegionPermissions getPermissions() {
+		return perms;
 	}
 
 	public void addMember(int playerId) {
@@ -123,6 +135,23 @@ public class Region {
 			}
 		} catch (Exception e) {};
 		return false;
+	}
+
+	public String getLocation() {
+		return "["+minX+","+minZ+"]->["+maxX+","+maxZ+"]";
+	}
+
+	public String listMembers() {
+		if (members.size()==0) return "No members!";
+		
+		String ret="";
+		Map<Integer, PlayerConfig> pConfigs=Main.globalConfig.getCachedPlayerListById();
+		for (int i:members) {
+			ret+=pConfigs.get(i).getName()+", ";
+		}
+		ret=ret.substring(0, ret.length()-2);
+		
+		return ret;
 	}
 	
 }

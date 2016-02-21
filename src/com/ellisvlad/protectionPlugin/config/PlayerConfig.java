@@ -4,19 +4,23 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.ellisvlad.protectionPlugin.Main;
 
 public class PlayerConfig {
 	
 	private int playerId;
-	private String tool_id;
+	private String tool_id, name;
 	private int tool_data;
 	private Location points[]=new Location[2];
 
-	public PlayerConfig(int playerId, String tool_id, int tool_data) {
+	public PlayerConfig(int playerId, String name, String tool_id, int tool_data) {
 		this.playerId=playerId;
+		this.name=name;
 		this.tool_id=tool_id;
 		this.tool_data=tool_data;
 	}
@@ -38,6 +42,7 @@ public class PlayerConfig {
 			} else {
 				ret=new PlayerConfig(
 					rs.getInt("pid"),
+					rs.getString("name"),
 					rs.getString("tool_id"),
 					rs.getInt("tool_data")
 				);
@@ -55,12 +60,13 @@ public class PlayerConfig {
 	public static PlayerConfig makeDefaultConfig(GlobalConfig owner, UUID p_uuid) {
 		try {
 			PreparedStatement ps=Main.globalConfig.dbConnection.prepareStatement(
-				  "INSERT INTO `players`(`uuidLo`, `uuidHi`, `tool_id`, `tool_data`) VALUES (?, ?, ?, ?);"
+				  "INSERT INTO `players`(`uuidLo`, `uuidHi`, `name`, `tool_id`, `tool_data`) VALUES (?, ?, ?, ?, ?);"
 			);
 			ps.setLong(1, p_uuid.getLeastSignificantBits());
 			ps.setLong(2, p_uuid.getMostSignificantBits());
-			ps.setString(3, Main.globalConfig.default_tool_name);
-			ps.setInt(4, Main.globalConfig.default_tool_data);
+			ps.setString(3, Bukkit.getPlayer(p_uuid).getName());
+			ps.setString(4, Main.globalConfig.default_tool_name);
+			ps.setInt(5, Main.globalConfig.default_tool_data);
 			ps.executeUpdate();
 			ps.close();
 			
@@ -71,8 +77,29 @@ public class PlayerConfig {
 		return null;
 	}
 
+	public static void saveConfig(GlobalConfig owner, Player player) {
+		PlayerConfig pConfig=getPlayerConfig(owner, player.getUniqueId());
+		try {
+			PreparedStatement ps=Main.globalConfig.dbConnection.prepareStatement(
+				"UPDATE `players` SET `name`=?, `tool_id`=?, `tool_data`=? WHERE `pid`=?"
+			);
+			ps.setString(1, player.getName());
+			ps.setString(2, pConfig.tool_id);
+			ps.setInt(3, pConfig.tool_data);
+			ps.setInt(4, pConfig.playerId);
+			ps.executeUpdate();
+			ps.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public String getTool_id() {
 		return tool_id;
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	public int getTool_data() {
@@ -101,6 +128,11 @@ public class PlayerConfig {
 
 	public int getPlayerId() {
 		return playerId;
+	}
+
+	public void setToolItem(ItemStack is) {
+		tool_id=is.getType().toString();
+		tool_data=is.getDurability();
 	}
 	
 }

@@ -77,6 +77,14 @@ public class RegionController {
 		return cache.getRegionsAt(blockX, blockZ);
 	}
 	
+	public Set<Region> getRegionsByOwner(int playerId) {
+		Set<Region> ret=new HashSet<>();
+		for (Region region:loadedRegionsById.values()) {
+			if (region.ownerPid==playerId) ret.add(region);
+		}
+		return ret;
+	}
+	
 	private void loadAll() {
 		if (!Main.globalConfig.dbConnection.isConnected()) {
 			Logger.err.println("Database was not connected! Region controller could not load!");
@@ -130,7 +138,7 @@ public class RegionController {
 			if (regionInsertStr==null) {
 				RegionPermissions perms=new RegionPermissions();
 				regionInsertStr="INSERT INTO `regions`(`rid`, `pid`, `minX`, `maxX`, `minZ`, `maxZ`, `name`, ";
-				int i=9;
+				int i=7;
 				for (Field f:perms.getClass().getDeclaredFields()) {
 					regionInsertStr+="`"+f.getName()+"`,";
 					i++;
@@ -198,7 +206,7 @@ public class RegionController {
 		return ret;
 	}
 	
-	protected void pendSave(Region r) {
+	public void pendSave(Region r) {
 		changedRegions.add(r);
 	}
 	

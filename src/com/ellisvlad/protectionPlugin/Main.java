@@ -10,6 +10,7 @@ import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
 import com.ellisvlad.protectionPlugin.Regions.RegionController;
 import com.ellisvlad.protectionPlugin.Regions.Region_Events;
 import com.ellisvlad.protectionPlugin.ToolItem.TI_EventListener;
+import com.ellisvlad.protectionPlugin.ToolItem.gui.TI_Gui_Main;
 import com.ellisvlad.protectionPlugin.config.GlobalConfig;
 
 public class Main extends JavaPlugin {
@@ -64,6 +65,7 @@ public class Main extends JavaPlugin {
 		pm.registerEvents(new CommandListener(), this);
 		pm.registerEvents(new TI_EventListener(), this);
 		pm.registerEvents(new Region_Events(), this);
+		pm.registerEvents(new TI_Gui_Main.TI_Gui_Listener(), this);
 		
 		globalConfig.regionController=new RegionController();
 		

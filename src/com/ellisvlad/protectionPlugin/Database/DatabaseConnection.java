@@ -119,6 +119,7 @@ public final class DatabaseConnection {
 					+ "`pid` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Unique ID', "
 					+ "`uuidLo` BIGINT NOT NULL COMMENT 'Ingame UUID-Lo', "
 					+ "`uuidHi` BIGINT NOT NULL COMMENT 'Ingame UUID-Hi', "
+					+ "`name` VARCHAR(20) NOT NULL COMMENT 'Last seen username', "
 					+ "`tool_id` VARCHAR(50) NOT NULL COMMENT 'Tool id used for regions', "
 					+ "`tool_data` SMALLINT NOT NULL COMMENT 'Tool damage value used for regions', "
 					+ "PRIMARY KEY (`pid`),"
@@ -252,9 +253,7 @@ public final class DatabaseConnection {
 							+ "`maxX` INT(11) NOT NULL,"
 							+ "`minZ` INT(11) NOT NULL,"
 							+ "`maxZ` INT(11) NOT NULL,"
-							+ "`name` VARCHAR(16) NOT NULL,"
-							+ "`greeting` VARCHAR(255) NOT NULL,"
-							+ "`farewell` VARCHAR(255) NOT NULL,";
+							+ "`name` VARCHAR(16) NOT NULL,";
 					for (Field f:perms.getClass().getDeclaredFields()) {
 						if (f.get(perms) instanceof RegionPermissionsGroupValue) {
 							str+="`"+f.getName()+"` ENUM('None','Owner','Members','All') NOT NULL,";

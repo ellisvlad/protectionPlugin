@@ -1,6 +1,9 @@
 package com.ellisvlad.protectionPlugin.config;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Material;
@@ -79,6 +82,14 @@ public class GlobalConfig {
 	}
 	public PlayerConfig getPlayerConfig(UUID p_uuid) {
 		return PlayerConfig.getPlayerConfig(this, p_uuid);
+	}
+	
+	public Map<Integer, PlayerConfig> getCachedPlayerListById() {
+		Map<Integer, PlayerConfig> ret=new HashMap<>();
+		for (PlayerConfig pConfig:playerConfigCache.values()) {
+			ret.put(pConfig.getPlayerId(), pConfig);
+		}
+		return ret;
 	}
 	
 }
