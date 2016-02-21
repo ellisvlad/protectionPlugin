@@ -1,7 +1,5 @@
 package com.ellisvlad.protectionPlugin;
 
-import java.util.Map.Entry;
-
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -20,6 +18,9 @@ public class Main extends JavaPlugin {
 	public static GlobalConfig globalConfig;
 	
 	public static void main(String[] args) { //Test
+		RegionCache cache=new RegionCache();
+		cache.putInCacheMap(new Region(0,0, 8,8));
+		
 //		GlobalConfig c=new GlobalConfig();
 //		UUID uuid=UUID.randomUUID();
 //		c.getPlayerConfig(uuid);

@@ -10,9 +10,10 @@ import com.ellisvlad.protectionPlugin.Logger;
 import com.ellisvlad.protectionPlugin.Main;
 
 public class RegionController {
-	/*
-	private HashMap<Integer, Region> loadedRegionsById=new HashMap<>(), newRegions=new HashMap<>();
+	
+	private HashMap<Integer, Region> loadedRegionsById=new HashMap<>();
 	private HashSet<Region> changedRegions=new HashSet<>();
+	private RegionCache cache=new RegionCache();
 	private int nextRegionId;
 	
 	public RegionController() {
@@ -38,7 +39,7 @@ public class RegionController {
 			return null;
 		}
 		
-		Region ret=loadedRegions.get(regionId);
+		Region ret=loadedRegionsById.get(regionId);
 		if (ret!=null) return ret;
 		
 		PreparedStatement ps=null;
@@ -47,7 +48,7 @@ public class RegionController {
 			ps.setInt(1, regionId);
 			ResultSet rs=ps.executeQuery();
 			if (rs.next()) {
-				loadedRegions.put(regionId,
+				loadedRegionsById.put(regionId,
 					new Region(
 						rs.getInt("minX"),
 						rs.getInt("minZ"),
@@ -97,19 +98,15 @@ public class RegionController {
 		} finally {
 			try {ps.close();} catch (Exception e) {};
 		}
-		if (ret!=null) loadedRegions.put(regionId, ret);
+		if (ret!=null) loadedRegionsById.put(regionId, ret);
 		return ret;
 	}
 	
 	public Region makeNewRegion(int minX, int minZ, int maxX, int maxZ) {
-		Region ret=new Region(minX, minZ, maxX, maxZ);
+		Region ret=cache.getOrCreate(minX, minZ, maxX, maxZ);
 		
-		Utils.getChunkNbt(int minX, int minZ);
-		
-		newRegions.put(nextRegionId, ret);
-		loadedRegions.put(nextRegionId, ret);
-		Arrays.
+		loadedRegionsById.put(nextRegionId, ret);
 		
 		return ret;
-	}*/
+	}
 }
