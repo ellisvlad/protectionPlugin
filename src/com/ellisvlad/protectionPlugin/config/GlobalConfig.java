@@ -32,6 +32,8 @@ public class GlobalConfig {
 	public String cleared_selection;
 	@saveToDatabase
 	public String created_region;
+	@saveToDatabase
+	public String already_is_region;
 
 	public DatabaseConnection dbConnection;
 	public RegionController regionController;

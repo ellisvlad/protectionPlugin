@@ -2,35 +2,39 @@ package com.ellisvlad.protectionPlugin.Regions;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 import com.ellisvlad.protectionPlugin.Logger;
 import com.ellisvlad.protectionPlugin.Main;
 
 public class RegionController {
 	
-	private HashMap<Integer, Region> loadedRegionsById=new HashMap<>();
+	protected HashMap<Integer, Region> loadedRegionsById=new HashMap<>();
 	private HashSet<Region> changedRegions=new HashSet<>();
-	private RegionCache cache=new RegionCache();
+	private RegionCache cache=new RegionCache(this);
 	private int nextRegionId;
 	
 	public RegionController() {
+		Logger.out.println("Loading regions...");
 		if (!Main.globalConfig.dbConnection.isConnected()) {
 			Logger.err.println("Database was not connected! Region controller could not init!");
 			return;
 		}
 		try {
-			PreparedStatement ps=Main.globalConfig.dbConnection.prepareStatement("SHOW TABLE STATUS LIKE \"regions\");");
+			PreparedStatement ps=Main.globalConfig.dbConnection.prepareStatement("SHOW TABLE STATUS LIKE \"regions\"");
 			ResultSet rs=ps.executeQuery();
 			rs.next();
 			nextRegionId=rs.getInt("Auto_increment");
 			ps.close();
 		} catch (Exception e) {
 			Logger.err.println("Region controller could not init! Could not get next region ID!");
+			e.printStackTrace();
 			return;
 		}
+		loadAll();
+		Logger.out.println(loadedRegionsById.size()+" regions loaded!");
 	}
 	
 	public Region getRegionById(int regionId) {
@@ -50,6 +54,8 @@ public class RegionController {
 			if (rs.next()) {
 				loadedRegionsById.put(regionId,
 					new Region(
+						regionId,
+						rs.getInt("pid"),
 						rs.getInt("minX"),
 						rs.getInt("minZ"),
 						rs.getInt("maxX"),
@@ -66,47 +72,95 @@ public class RegionController {
 		return ret;
 	}
 	
-	// !Does not use cache!
-	public Region getRegionByPosition(int blockX, int blockZ) {
+	public Set<Region> getRegionsByPosition(int blockX, int blockZ) {
+		return cache.getRegionsAt(blockX, blockZ);
+	}
+	
+	private void loadAll() {
 		if (!Main.globalConfig.dbConnection.isConnected()) {
-			Logger.err.println("Database was not connected! Region controller could not init!");
-			return null;
+			Logger.err.println("Database was not connected! Region controller could not load!");
+			return;
 		}
 
-		Region ret=null;
-		int regionId=0;
 		PreparedStatement ps=null;
 		try {
-			ps=Main.globalConfig.dbConnection.prepareStatement("SELECT * FROM `regions` WHERE `minX`<=? AND `minZ`<=? AND `maxX`>=? AND `maxZ`>=? LIMIT 1");
-			ps.setInt(1, blockX);
-			ps.setInt(2, blockZ);
-			ps.setInt(3, blockX);
-			ps.setInt(4, blockZ);
+			ps=Main.globalConfig.dbConnection.prepareStatement("SELECT * FROM `regions`");
 			ResultSet rs=ps.executeQuery();
-			if (rs.next()) {
-				regionId=rs.getInt("rid");
-				ret=new Region(
+			while (rs.next()) {
+				cache.create(
+					rs.getInt("rid"),
+					rs.getInt("pid"),
 					rs.getInt("minX"),
 					rs.getInt("minZ"),
 					rs.getInt("maxX"),
-					rs.getInt("maxZ")
+					rs.getInt("maxZ"),
+					true
 				);
-			} else {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {ps.close();} catch (Exception e) {};
 		}
-		if (ret!=null) loadedRegionsById.put(regionId, ret);
-		return ret;
 	}
 	
-	public Region makeNewRegion(int minX, int minZ, int maxX, int maxZ) {
-		Region ret=cache.getOrCreate(minX, minZ, maxX, maxZ);
-		
-		loadedRegionsById.put(nextRegionId, ret);
-		
-		return ret;
+	protected void savePending() {
+		if (!Main.globalConfig.dbConnection.isConnected()) {
+			Logger.err.println("Database was not connected! Region controller could not save!");
+			return;
+		}
+
+		PreparedStatement ps=null;
+		try {
+			ps=Main.globalConfig.dbConnection.prepareStatement("UPDATE `regions` SET `pid`=?, `minX`=?, `maxX`=?, `minZ`=?, `maxZ`=? WHERE `rid`=?");
+			for (Region r:changedRegions) {
+				ps.setInt(1, r.ownerPid);
+				ps.setInt(2, r.minX);
+				ps.setInt(3, r.maxX);
+				ps.setInt(4, r.minZ);
+				ps.setInt(5, r.maxZ);
+				ps.setInt(6, r.regionId);
+				ps.addBatch();
+			}
+			ps.executeBatch();
+			changedRegions.clear();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {ps.close();} catch (Exception e) {};
+		}
+	}
+	
+	protected void insert(Region r) {
+		if (!Main.globalConfig.dbConnection.isConnected()) {
+			Logger.err.println("Database was not connected! Region controller could not save!");
+			return;
+		}
+
+		PreparedStatement ps=null;
+		try {
+			ps=Main.globalConfig.dbConnection.prepareStatement("INSERT INTO `regions`(`rid`, `pid`, `minX`, `maxX`, `minZ`, `maxZ`) VALUES (?, ?, ?, ?, ?, ?)");
+			ps.setInt(1, r.regionId);
+			ps.setInt(2, r.ownerPid);
+			ps.setInt(3, r.minX);
+			ps.setInt(4, r.maxX);
+			ps.setInt(5, r.minZ);
+			ps.setInt(6, r.maxZ);
+			ps.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {ps.close();} catch (Exception e) {};
+		}
+	}
+	
+	public Region makeNewRegion(int ownerId, int minX, int minZ, int maxX, int maxZ) {
+		Region r=cache.get(minX, minZ, maxX, maxZ);
+		if (r!=null) return null;
+		return cache.create(getNextId(), ownerId, minX, minZ, maxX, maxZ);
+	}
+	
+	private int getNextId() {
+		return nextRegionId++;
 	}
 }

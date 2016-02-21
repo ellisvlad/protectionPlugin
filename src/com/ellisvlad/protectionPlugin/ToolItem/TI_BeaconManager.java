@@ -11,10 +11,11 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
+import com.comphenix.net.sf.cglib.core.MethodWrapper.MethodWrapperKey;
 import com.ellisvlad.protectionPlugin.Main;
 import com.ellisvlad.protectionPlugin.Utils;
+import com.ellisvlad.protectionPlugin.Utils.delayedPromptTextResponseHandler;
 import com.ellisvlad.protectionPlugin.Regions.Region;
-import com.ellisvlad.protectionPlugin.Regions.RegionStorage;
 import com.ellisvlad.protectionPlugin.ToolItem.gui.TI_Gui_Main;
 import com.ellisvlad.protectionPlugin.config.PlayerConfig;
 
@@ -31,28 +32,61 @@ public class TI_BeaconManager {
 			pConfig.points[1]=pos;
 			Utils.sendMessageNewLines(player, Main.globalConfig.second_point_selected);
 		} else { //Create region or Clear both
-			RegionStorage.test(pConfig.points[0], pConfig.points[1]);
-			if (pConfig.points[0]!=null) return;
-			
 			Utils.clearBeaconLine(pConfig.points[0], player);
 			Utils.clearBeaconLine(pConfig.points[1], player);
 
 			if (player.isSneaking()) {
-				int size=0;
-				size+=Math.abs(pConfig.points[0].getBlockX() - pConfig.points[1].getBlockX())+1;
-				size*=Math.abs(pConfig.points[0].getBlockZ() - pConfig.points[1].getBlockZ())+1;
-				Utils.sendMessageNewLines(player,
-					Main.globalConfig.created_region
-						.replace("{pos1}", "["+pConfig.points[0].getBlockX()+","+pConfig.points[0].getBlockY()+","+pConfig.points[0].getBlockZ()+"]")
-						.replace("{pos2}", "["+pConfig.points[1].getBlockX()+","+pConfig.points[1].getBlockY()+","+pConfig.points[1].getBlockZ()+"]")
-						.replace("{size}", "d"+size)
+				Region region=Main.globalConfig.regionController.makeNewRegion(
+					pConfig.playerId,
+					pConfig.points[0].getBlockX(),
+					pConfig.points[0].getBlockZ(),
+					pConfig.points[1].getBlockX(),
+					pConfig.points[1].getBlockZ()
 				);
+				
+				if (region==null) {
+					Utils.sendMessageNewLines(player,
+						Main.globalConfig.already_is_region
+							.replace("{pos1}", "["+pConfig.points[0].getBlockX()+","+pConfig.points[0].getBlockZ()+"]")
+							.replace("{pos2}", "["+pConfig.points[1].getBlockX()+","+pConfig.points[1].getBlockZ()+"]")
+					);
+				} else {
+					Utils.delayedPromptText(player.getLocation(), player, new String[]{"Give your", "region a", "name:", "Unnamed_Region"}, new delayedPromptTextResponseHandler() {
+						@Override
+						public void handle(String[] lines, Player player) {
+							PlayerConfig pConfig=Main.globalConfig.getPlayerConfig(player);
+							Region region=Region.makeUnownedRegion(
+								pConfig.points[0].getBlockX(),
+								pConfig.points[0].getBlockZ(),
+								pConfig.points[1].getBlockX(),
+								pConfig.points[1].getBlockZ()
+							);
+
+							for (Region r:Main.globalConfig.regionController.getRegionsByPosition(pConfig.points[0].getBlockX(), pConfig.points[0].getBlockZ())) {
+								if (region.equals(r)) {
+									region=r;
+									break;
+								}
+							}
+							
+							Utils.sendMessageNewLines(player,
+								Main.globalConfig.created_region
+									.replace("{pos1}", "["+pConfig.points[0].getBlockX()+","+pConfig.points[0].getBlockZ()+"]")
+									.replace("{pos2}", "["+pConfig.points[1].getBlockX()+","+pConfig.points[1].getBlockZ()+"]")
+									.replace("{size}", ""+region.getSize())
+							);
+
+							pConfig.points[0]=null;
+							pConfig.points[1]=null;
+						}
+					});
+				}
 			} else { //Clear
 				Utils.sendMessageNewLines(player, Main.globalConfig.cleared_selection);
+
+				pConfig.points[0]=null;
+				pConfig.points[1]=null;
 			}
-			
-			pConfig.points[0]=null;
-			pConfig.points[1]=null;
 		}
 	}
 

@@ -81,7 +81,7 @@ public final class DatabaseConnection {
 		
 		if (sqlConnection==null) {
 			try {
-				sqlConnection = DriverManager.getConnection("jdbc:mysql://"+config.host+":3306/"+config.db+"?characterEncoding=UTF-8", config.username, config.password);
+				sqlConnection = DriverManager.getConnection("jdbc:mysql://"+config.host+":3306/"+config.db+"?characterEncoding=UTF-8&amp;autoReConnect=true", config.username, config.password);
 			} catch (SQLException e) {
 				Logger.err.println("Could not connect to "+config.host+"/"+config.db+" using login "+config.username);
 				e.printStackTrace();
@@ -90,7 +90,6 @@ public final class DatabaseConnection {
 			
 			// Connected OK!
 			if (!initDatabaseTables()) return false;
-			new Thread(new KeepAlive(sqlConnection), "Mysql Pinger").start();
 		}
 		return false;
 	}
@@ -155,7 +154,6 @@ public final class DatabaseConnection {
 					+ "  §6§o/p§7§orotect help§r Show this help\n"
 					+ "  §6§o/p§7§orotect §6§ot§7§oool§r Aquire tool\n"
 					+ "§4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥ §6⬥ §4⬥\n"
-					+ "  Tool controls:\n"
 					+ "  §7Left click§r to select region\n"
 					+ "  §7Shift + Left click§r to confirm a region\n"
 					+ "  §7Right click§r to push a boundry\n"
@@ -189,6 +187,10 @@ public final class DatabaseConnection {
 				configStatement.addBatch();
 				configStatement.setString(1, "created_region");
 				configStatement.setString(2, "§6Created a region from {pos1} to {pos2} of size {size}!");
+				configStatement.addBatch();
+				configStatement.executeBatch();
+				configStatement.setString(1, "already_is_region");
+				configStatement.setString(2, "§4There already is a region here!");
 				configStatement.addBatch();
 				configStatement.executeBatch();
 				configStatement.close();

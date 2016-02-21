@@ -5,8 +5,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.comphenix.protocol.ProtocolLibrary;
 import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
-import com.ellisvlad.protectionPlugin.Regions.Region;
 import com.ellisvlad.protectionPlugin.Regions.RegionCache;
 import com.ellisvlad.protectionPlugin.Regions.RegionController;
 import com.ellisvlad.protectionPlugin.ToolItem.TI_EventListener;
@@ -18,9 +18,6 @@ public class Main extends JavaPlugin {
 	public static GlobalConfig globalConfig;
 	
 	public static void main(String[] args) { //Test
-		RegionCache cache=new RegionCache();
-		cache.putInCacheMap(new Region(0,0, 8,8));
-		
 //		GlobalConfig c=new GlobalConfig();
 //		UUID uuid=UUID.randomUUID();
 //		c.getPlayerConfig(uuid);
@@ -39,6 +36,12 @@ public class Main extends JavaPlugin {
 
 		Logger.out.println("Initialising...");
 		Long startTime=System.currentTimeMillis();
+		
+		try {ProtocolLibrary.getProtocolManager();} catch (Exception e) {
+			Logger.err.println("ProtocolLib did not load!");
+			return;
+		}
+		
 		DatabaseConnection dbConnection=new DatabaseConnection();
 		globalConfig=dbConnection.loadDatabaseConfig();
 		if (globalConfig==null) {
@@ -52,6 +55,7 @@ public class Main extends JavaPlugin {
 		pm.registerEvents(new TI_EventListener(), this);
 		
 		globalConfig.regionController=new RegionController();
+		
 		
 		Logger.out.println("All OK after "+(System.currentTimeMillis()-startTime)+"ms");
 	}

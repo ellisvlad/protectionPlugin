@@ -33,7 +33,7 @@ public class TI_Handler {
 		Material mat=Material.getMaterial(pc.tool_id);
 		if (mat==null) mat=Material.getMaterial(pc.tool_id);
 		
-		return Utils.makeItemStack(mat, 1, (short)pc.tool_data, Main.globalConfig.tool_name, Main.globalConfig.tool_description.split("\n"));
+		return Utils.makeItemStack(mat, 1, (short)pc.tool_data, Main.globalConfig.tool_name, Main.globalConfig.tool_description.split("\n"), true);
 	}
 	
 	public static void renderToolItem(net.minecraft.server.v1_8_R3.ItemStack is) {

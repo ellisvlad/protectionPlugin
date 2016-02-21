@@ -2,6 +2,7 @@ package com.ellisvlad.protectionPlugin;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,14 +22,25 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
+
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.Blocks;
+import net.minecraft.server.v1_8_R3.ChatComponentText;
+import net.minecraft.server.v1_8_R3.IChatBaseComponent;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.NBTTagList;
 import net.minecraft.server.v1_8_R3.NBTTagString;
 import net.minecraft.server.v1_8_R3.Packet;
+import net.minecraft.server.v1_8_R3.PacketPlayInUpdateSign;
 import net.minecraft.server.v1_8_R3.PacketPlayOutBlockChange;
 import net.minecraft.server.v1_8_R3.PacketPlayOutMultiBlockChange;
+import net.minecraft.server.v1_8_R3.PacketPlayOutOpenSignEditor;
+import net.minecraft.server.v1_8_R3.PacketPlayOutUpdateSign;
+import net.minecraft.server.v1_8_R3.World;
 
 public class Utils {
 	
@@ -104,6 +116,9 @@ public class Utils {
 
 			ArrayList<PacketPlayOutMultiBlockChange.MultiBlockChangeInfo> blocks=new ArrayList<>();
 			blocks.add(packetChangeBlocks.new MultiBlockChangeInfo(blockPos++, Blocks.BEACON.getBlockData()));
+			blocks.add(packetChangeBlocks.new MultiBlockChangeInfo(blockPos++,
+				CraftMagicNumbers.getBlock(Material.STAINED_GLASS).fromLegacyData(color.getWoolData())
+			));
 			while ((blockPos & 0xFF) !=254) {
 				if (!pos.getChunk().getBlock(blockPos>>12 & 15, blockPos & 255, blockPos>>8 & 15).isEmpty())
 					blocks.add(packetChangeBlocks.new MultiBlockChangeInfo(blockPos,
@@ -211,6 +226,73 @@ public class Utils {
 			pos=pos.getBlock().getRelative(rel).getLocation();
 			try {Thread.sleep(1000/20);} catch (Exception e) {}; //1 tick
 			Utils.sendBeaconLine(pos, player, DyeColor.YELLOW);
+		}
+		
+	}
+
+	public static void delayedPromptText(Location pos, Player player, String[] text, delayedPromptTextResponseHandler returnMethod) {
+		ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(Main.plugin, PacketType.Play.Client.UPDATE_SIGN) {
+        	@Override
+            public void onPacketReceiving(PacketEvent event) {
+        		PacketPlayInUpdateSign packet=(PacketPlayInUpdateSign)event.getPacket().getHandle();
+        		delayedPromptTextResponseHandler handler=delayedPromptTextClass.returnHandlers.remove(packet.a().asLong());
+        		if (handler!=null) {
+        			List<String> lines=new ArrayList<String>(4);
+        			for (IChatBaseComponent line:packet.b()) lines.add(line.getText());
+        			handler.handle(lines.toArray(new String[4]), event.getPlayer());
+        			
+        			PacketPlayOutBlockChange packetChangeBlock=new PacketPlayOutBlockChange(((CraftWorld)event.getPlayer().getWorld()).getHandle(), packet.a());
+        			packetChangeBlock.block=Blocks.AIR.getBlockData();
+        			Utils.safePacketSend((CraftPlayer)event.getPlayer(), packetChangeBlock);
+        		}
+            }
+        });
+		
+		new delayedPromptTextClass(pos, player, text, returnMethod);
+	}
+	
+	public static interface delayedPromptTextResponseHandler {
+		public void handle(String[] lines, Player player);
+	}
+	
+	private static class delayedPromptTextClass extends Thread {
+		
+		World world;
+		BlockPosition pos;
+		Player player;
+		String text[];
+		public static HashMap<Long, delayedPromptTextResponseHandler> returnHandlers=new HashMap<>();
+		
+		private delayedPromptTextClass(Location pos, Player player, String[] text, delayedPromptTextResponseHandler responseHandler) {
+			this.world=((CraftWorld)pos.getWorld()).getHandle();
+			this.pos=new BlockPosition(player.getLocation().getBlockX(), 254, player.getLocation().getBlockZ());
+			this.player=player;
+			this.text=text;
+			returnHandlers.put(this.pos.asLong(), responseHandler);
+			start();
+		}
+		
+		@Override
+		public void run() {
+			PacketPlayOutBlockChange packetChangeBlock=new PacketPlayOutBlockChange(world, pos);
+			packetChangeBlock.block=Blocks.STANDING_SIGN.getBlockData();
+			Utils.safePacketSend((CraftPlayer)player, packetChangeBlock);
+
+			PacketPlayOutUpdateSign packetSignData=new PacketPlayOutUpdateSign(
+				world, pos,
+				new ChatComponentText[]{
+					new ChatComponentText(text[0]),
+					new ChatComponentText(text[1]),
+					new ChatComponentText(text[2]),
+					new ChatComponentText(text[3])
+				}
+			);
+			Utils.safePacketSend((CraftPlayer)player, packetSignData);
+			
+			try {Thread.sleep(1000/20);} catch (Exception e) {}; //1 tick
+			
+			PacketPlayOutOpenSignEditor packetSignEditor=new PacketPlayOutOpenSignEditor(pos);
+			Utils.safePacketSend((CraftPlayer)player, packetSignEditor);
 		}
 		
 	}

@@ -10,15 +10,14 @@ import com.ellisvlad.protectionPlugin.Main;
 import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
 
 public class PlayerConfig {
+	
+	public int playerId;
 	public String tool_id;
 	public int tool_data;
 	public Location points[]=new Location[2];
 
-	public PlayerConfig() {
-		this.tool_id=Main.globalConfig.default_tool_name;
-		this.tool_data=Main.globalConfig.default_tool_data;
-	}
-	public PlayerConfig(String tool_id, int tool_data) {
+	public PlayerConfig(int playerId, String tool_id, int tool_data) {
+		this.playerId=playerId;
 		this.tool_id=tool_id;
 		this.tool_data=tool_data;
 	}
@@ -36,9 +35,10 @@ public class PlayerConfig {
 			ps.setLong(2, p_uuid.getMostSignificantBits());
 			ResultSet rs=ps.executeQuery();
 			if (!rs.next()) { // Not in database!
-				ret=makeDefaultConfig(p_uuid);
+				return makeDefaultConfig(owner, p_uuid);
 			} else {
 				ret=new PlayerConfig(
+					rs.getInt("pid"),
 					rs.getString("tool_id"),
 					rs.getInt("tool_data")
 				);
@@ -53,18 +53,19 @@ public class PlayerConfig {
 		return null;
 	}
 
-	public static PlayerConfig makeDefaultConfig(UUID p_uuid) {
+	public static PlayerConfig makeDefaultConfig(GlobalConfig owner, UUID p_uuid) {
 		try {
 			PreparedStatement ps=Main.globalConfig.dbConnection.prepareStatement(
-				"INSERT INTO `players`(`uuidLo`, `uuidHi`, `tool_id`, `tool_data`) VALUES (?, ?, ?, ?)"
+				  "INSERT INTO `players`(`uuidLo`, `uuidHi`, `tool_id`, `tool_data`) VALUES (?, ?, ?, ?);"
 			);
 			ps.setLong(1, p_uuid.getLeastSignificantBits());
 			ps.setLong(2, p_uuid.getMostSignificantBits());
 			ps.setString(3, Main.globalConfig.default_tool_name);
 			ps.setInt(4, Main.globalConfig.default_tool_data);
+			ps.executeUpdate();
 			ps.close();
 			
-			return new PlayerConfig();
+			return getPlayerConfig(owner, p_uuid);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
