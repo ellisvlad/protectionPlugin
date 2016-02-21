@@ -30,6 +30,11 @@ public class CommandListener implements Listener {
 			return;
 		}
 		
+		if (words[1].toLowerCase().startsWith("t")) { // Tool
+			TI_Handler.giveTool(event.getPlayer(), null);
+			return;
+		}
+		
 		net.minecraft.server.v1_8_R3.ItemStack nis=Utils.getItemStackHandle(event.getPlayer().getItemInHand());
 		System.out.println(nis.getTag());
 	}
