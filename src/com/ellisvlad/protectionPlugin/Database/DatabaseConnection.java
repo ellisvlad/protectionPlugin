@@ -307,6 +307,6 @@ public final class DatabaseConnection {
 	}
 	
 	public boolean isConnected() {
-		return (sqlConnection==null);
+		return (sqlConnection!=null);
 	}
 }

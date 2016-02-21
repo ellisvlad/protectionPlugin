@@ -13,6 +13,8 @@ import org.bukkit.entity.Player;
 
 import com.ellisvlad.protectionPlugin.Main;
 import com.ellisvlad.protectionPlugin.Utils;
+import com.ellisvlad.protectionPlugin.Regions.Region;
+import com.ellisvlad.protectionPlugin.Regions.RegionStorage;
 import com.ellisvlad.protectionPlugin.ToolItem.gui.TI_Gui_Main;
 import com.ellisvlad.protectionPlugin.config.PlayerConfig;
 
@@ -29,11 +31,13 @@ public class TI_BeaconManager {
 			pConfig.points[1]=pos;
 			Utils.sendMessageNewLines(player, Main.globalConfig.second_point_selected);
 		} else { //Create region or Clear both
+			RegionStorage.test(pConfig.points[0], pConfig.points[1]);
+			if (pConfig.points[0]!=null) return;
+			
 			Utils.clearBeaconLine(pConfig.points[0], player);
 			Utils.clearBeaconLine(pConfig.points[1], player);
 
 			if (player.isSneaking()) {
-				//createRegion();
 				int size=0;
 				size+=Math.abs(pConfig.points[0].getBlockX() - pConfig.points[1].getBlockX())+1;
 				size*=Math.abs(pConfig.points[0].getBlockZ() - pConfig.points[1].getBlockZ())+1;
@@ -41,7 +45,7 @@ public class TI_BeaconManager {
 					Main.globalConfig.created_region
 						.replace("{pos1}", "["+pConfig.points[0].getBlockX()+","+pConfig.points[0].getBlockY()+","+pConfig.points[0].getBlockZ()+"]")
 						.replace("{pos2}", "["+pConfig.points[1].getBlockX()+","+pConfig.points[1].getBlockY()+","+pConfig.points[1].getBlockZ()+"]")
-						.replace("{size}", ""+size)
+						.replace("{size}", "d"+size)
 				);
 			} else { //Clear
 				Utils.sendMessageNewLines(player, Main.globalConfig.cleared_selection);
