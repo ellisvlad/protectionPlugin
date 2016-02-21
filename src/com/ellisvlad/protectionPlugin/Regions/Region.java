@@ -1,17 +1,34 @@
 package com.ellisvlad.protectionPlugin.Regions;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.bukkit.entity.Player;
+
+import com.ellisvlad.protectionPlugin.Main;
+import com.ellisvlad.protectionPlugin.config.PlayerConfig;
+
 public class Region {
 	
 	int regionId, ownerPid;
+	Set<Integer> members;
 	int minX, minZ, maxX, maxZ;
+	
+	RegionPermissions perms;
+	String greeting, farewell;
+	String name;
 	
 	protected Region(int regionId, int ownerPid, int x1, int z1, int x2, int z2) {
 		this.regionId=regionId;
 		this.ownerPid=ownerPid;
+		this.members=new HashSet<>();
 		this.minX=Math.min(x1, x2);
 		this.minZ=Math.min(z1, z2);
 		this.maxX=Math.max(x1, x2);
 		this.maxZ=Math.max(z1, z2);
+		this.perms=new RegionPermissions();
+		this.greeting="";
+		this.farewell="";
 	}
 	
 	public static Region makeUnownedRegion(int x1, int z1, int x2, int z2) {
@@ -28,7 +45,7 @@ public class Region {
 	
 	@Override
 	public String toString() {
-		return "{"+regionId+"|"+ownerPid+" : ["+minX+","+minZ+"] -> ["+maxX+","+maxZ+"] : "+getSize()+"}";
+		return "{"+regionId+"|"+ownerPid+" : ["+minX+","+minZ+"] -> ["+maxX+","+maxZ+"] : "+getSize()+" : "+members+"}";
 	}
 	
 	public boolean contains(int x, int z) {
@@ -40,6 +57,30 @@ public class Region {
 		size+=maxX - minX+1;
 		size*=maxZ - minZ+1;
 		return size;
+	}
+
+	public void addMember(int playerId) {
+		members.add(playerId);
+	}
+	public void addMember(Player p) {
+		PlayerConfig pConfig=Main.globalConfig.getPlayerConfig(p);
+		addMember(pConfig.getPlayerId());
+	}
+
+	public void removeMember(int playerId) {
+		members.remove(playerId);
+	}
+	public void removeMember(Player p) {
+		PlayerConfig pConfig=Main.globalConfig.getPlayerConfig(p);
+		removeMember(pConfig.getPlayerId());
+	}
+
+	public boolean hasMember(int playerId) {
+		return members.contains(playerId);
+	}
+	public boolean hasMember(Player p) {
+		PlayerConfig pConfig=Main.globalConfig.getPlayerConfig(p);
+		return hasMember(pConfig.getPlayerId());
 	}
 	
 }

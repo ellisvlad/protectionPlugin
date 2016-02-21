@@ -20,7 +20,7 @@ public class TI_EventListener implements Listener {
 		if (e.getTo().getBlockY()==e.getFrom().getBlockY()) return;
 		PlayerConfig pConfig=Main.globalConfig.getPlayerConfig(e.getPlayer());
 		
-		if (pConfig.points[0]!=null) {
+		if (pConfig.getFirstPoint()!=null) {
 			
 		}
 	}

@@ -2,6 +2,7 @@ package com.ellisvlad.protectionPlugin.Regions;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -52,17 +53,10 @@ public class RegionController {
 			ps.setInt(1, regionId);
 			ResultSet rs=ps.executeQuery();
 			if (rs.next()) {
-				loadedRegionsById.put(regionId,
-					new Region(
-						regionId,
-						rs.getInt("pid"),
-						rs.getInt("minX"),
-						rs.getInt("minZ"),
-						rs.getInt("maxX"),
-						rs.getInt("maxZ")
-					)
-				);
+				ret=createRegionFromResultSet(rs);
+				cache.create(ret, false);
 			} else {
+				ret=null;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -87,15 +81,8 @@ public class RegionController {
 			ps=Main.globalConfig.dbConnection.prepareStatement("SELECT * FROM `regions`");
 			ResultSet rs=ps.executeQuery();
 			while (rs.next()) {
-				cache.create(
-					rs.getInt("rid"),
-					rs.getInt("pid"),
-					rs.getInt("minX"),
-					rs.getInt("minZ"),
-					rs.getInt("maxX"),
-					rs.getInt("maxZ"),
-					true
-				);
+				 Region region=createRegionFromResultSet(rs);
+				 cache.create(region, false);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -110,24 +97,18 @@ public class RegionController {
 			return;
 		}
 
-		PreparedStatement ps=null;
+		regionSaveStatement saveStatement=null;
 		try {
-			ps=Main.globalConfig.dbConnection.prepareStatement("UPDATE `regions` SET `pid`=?, `minX`=?, `maxX`=?, `minZ`=?, `maxZ`=? WHERE `rid`=?");
+			saveStatement=new regionSaveStatement();
 			for (Region r:changedRegions) {
-				ps.setInt(1, r.ownerPid);
-				ps.setInt(2, r.minX);
-				ps.setInt(3, r.maxX);
-				ps.setInt(4, r.minZ);
-				ps.setInt(5, r.maxZ);
-				ps.setInt(6, r.regionId);
-				ps.addBatch();
+				saveStatement.addRegion(r);
 			}
-			ps.executeBatch();
+			saveStatement.execute();
 			changedRegions.clear();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			try {ps.close();} catch (Exception e) {};
+			try {saveStatement.close();} catch (Exception e) {};
 		}
 	}
 	
@@ -162,5 +143,46 @@ public class RegionController {
 	
 	private int getNextId() {
 		return nextRegionId++;
+	}
+
+	protected Region createRegionFromResultSet(ResultSet rs) throws SQLException {
+		Region ret=new Region(
+			rs.getInt("rid"),
+			rs.getInt("pid"),
+			rs.getInt("minX"),
+			rs.getInt("minZ"),
+			rs.getInt("maxX"),
+			rs.getInt("maxZ")
+		);
+		ret.name=rs.getString("name");
+		ret.greeting=rs.getString("greeting");
+		ret.farewell=rs.getString("farewell");
+		return ret;
+	}
+	
+	private class regionSaveStatement {
+		PreparedStatement statement;
+		
+		regionSaveStatement() throws Exception {
+			statement=Main.globalConfig.dbConnection.prepareStatement("UPDATE `regions` SET `pid`=?, `minX`=?, `maxX`=?, `minZ`=?, `maxZ`=? WHERE `rid`=?");
+		}
+
+		public void addRegion(Region r) throws SQLException {
+			statement.setInt(1, r.ownerPid);
+			statement.setInt(2, r.minX);
+			statement.setInt(3, r.maxX);
+			statement.setInt(4, r.minZ);
+			statement.setInt(5, r.maxZ);
+			statement.setInt(6, r.regionId);
+			statement.addBatch();
+		}
+
+		public void close() throws SQLException {
+			statement.close();
+		}
+
+		public void execute() throws SQLException {
+			statement.executeBatch();
+		}
 	}
 }

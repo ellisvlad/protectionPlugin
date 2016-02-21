@@ -75,8 +75,12 @@ public class RegionCache {
 	}
 
 	public Region create(int regionId, int ownerId, int minX, int minZ, int maxX, int maxZ, boolean doNotInsert) {
-		// Method could be optimised
 		Region r=new Region(regionId, ownerId, minX, minZ, maxX, maxZ);
+		return create(r, doNotInsert);
+	}
+	
+	public Region create(Region r, boolean doNotInsert) {
+		// Method could be optimised
 		
 		for (int x=r.minX>>3; x<=r.maxX>>3; x++) {
 			for (int z=r.minZ>>3; z<=r.maxZ>>3; z++) {
@@ -90,7 +94,7 @@ public class RegionCache {
 				subMap.addRegion(r);
 			}
 		}
-		regionController.loadedRegionsById.put(regionId, r);
+		regionController.loadedRegionsById.put(r.regionId, r);
 		if (!doNotInsert) regionController.insert(r);
 		
 		return r;

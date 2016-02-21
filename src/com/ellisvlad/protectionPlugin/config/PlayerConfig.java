@@ -7,14 +7,13 @@ import java.util.UUID;
 import org.bukkit.Location;
 
 import com.ellisvlad.protectionPlugin.Main;
-import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
 
 public class PlayerConfig {
 	
-	public int playerId;
-	public String tool_id;
-	public int tool_data;
-	public Location points[]=new Location[2];
+	private int playerId;
+	private String tool_id;
+	private int tool_data;
+	private Location points[]=new Location[2];
 
 	public PlayerConfig(int playerId, String tool_id, int tool_data) {
 		this.playerId=playerId;
@@ -70,6 +69,38 @@ public class PlayerConfig {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public String getTool_id() {
+		return tool_id;
+	}
+
+	public int getTool_data() {
+		return tool_data;
+	}
+
+	public Location[] getPoints() {
+		return points;
+	}
+
+	public Location getFirstPoint() {
+		return points[0];
+	}
+
+	public Location getSecondPoint() {
+		return points[1];
+	}
+
+	public void setFirstPoint(Location point) {
+		points[0]=point;
+	}
+
+	public void setSecondPoint(Location point) {
+		points[1]=point;
+	}
+
+	public int getPlayerId() {
+		return playerId;
 	}
 	
 }

@@ -22,33 +22,33 @@ import com.ellisvlad.protectionPlugin.config.PlayerConfig;
 public class TI_BeaconManager {
 
 	public static void onLeftClick(Location pos, Player player, PlayerConfig pConfig) {
-		if (pConfig.points[0]==null) { //First Pos
+		if (pConfig.getFirstPoint()==null) { //First Pos
 			Utils.sendBeaconLine(pos, player, DyeColor.ORANGE);
-			pConfig.points[0]=pos;
+			pConfig.setFirstPoint(pos);
 			Utils.sendMessageNewLines(player, Main.globalConfig.first_point_selected);
 		} else
-		if (pConfig.points[1]==null) { //Second Pos
+		if (pConfig.getSecondPoint()==null) { //Second Pos
 			Utils.sendBeaconLine(pos, player, DyeColor.BLUE);
-			pConfig.points[1]=pos;
+			pConfig.setSecondPoint(pos);
 			Utils.sendMessageNewLines(player, Main.globalConfig.second_point_selected);
 		} else { //Create region or Clear both
-			Utils.clearBeaconLine(pConfig.points[0], player);
-			Utils.clearBeaconLine(pConfig.points[1], player);
+			Utils.clearBeaconLine(pConfig.getFirstPoint(), player);
+			Utils.clearBeaconLine(pConfig.getSecondPoint(), player);
 
 			if (player.isSneaking()) {
 				Region region=Main.globalConfig.regionController.makeNewRegion(
-					pConfig.playerId,
-					pConfig.points[0].getBlockX(),
-					pConfig.points[0].getBlockZ(),
-					pConfig.points[1].getBlockX(),
-					pConfig.points[1].getBlockZ()
+					pConfig.getPlayerId(),
+					pConfig.getFirstPoint().getBlockX(),
+					pConfig.getFirstPoint().getBlockZ(),
+					pConfig.getSecondPoint().getBlockX(),
+					pConfig.getSecondPoint().getBlockZ()
 				);
 				
 				if (region==null) {
 					Utils.sendMessageNewLines(player,
 						Main.globalConfig.already_is_region
-							.replace("{pos1}", "["+pConfig.points[0].getBlockX()+","+pConfig.points[0].getBlockZ()+"]")
-							.replace("{pos2}", "["+pConfig.points[1].getBlockX()+","+pConfig.points[1].getBlockZ()+"]")
+							.replace("{pos1}", "["+pConfig.getFirstPoint().getBlockX()+","+pConfig.getFirstPoint().getBlockZ()+"]")
+							.replace("{pos2}", "["+pConfig.getSecondPoint().getBlockX()+","+pConfig.getSecondPoint().getBlockZ()+"]")
 					);
 				} else {
 					Utils.delayedPromptText(player.getLocation(), player, new String[]{"Give your", "region a", "name:", "Unnamed_Region"}, new delayedPromptTextResponseHandler() {
@@ -56,13 +56,13 @@ public class TI_BeaconManager {
 						public void handle(String[] lines, Player player) {
 							PlayerConfig pConfig=Main.globalConfig.getPlayerConfig(player);
 							Region region=Region.makeUnownedRegion(
-								pConfig.points[0].getBlockX(),
-								pConfig.points[0].getBlockZ(),
-								pConfig.points[1].getBlockX(),
-								pConfig.points[1].getBlockZ()
+								pConfig.getFirstPoint().getBlockX(),
+								pConfig.getFirstPoint().getBlockZ(),
+								pConfig.getSecondPoint().getBlockX(),
+								pConfig.getSecondPoint().getBlockZ()
 							);
 
-							for (Region r:Main.globalConfig.regionController.getRegionsByPosition(pConfig.points[0].getBlockX(), pConfig.points[0].getBlockZ())) {
+							for (Region r:Main.globalConfig.regionController.getRegionsByPosition(pConfig.getFirstPoint().getBlockX(), pConfig.getFirstPoint().getBlockZ())) {
 								if (region.equals(r)) {
 									region=r;
 									break;
@@ -71,21 +71,21 @@ public class TI_BeaconManager {
 							
 							Utils.sendMessageNewLines(player,
 								Main.globalConfig.created_region
-									.replace("{pos1}", "["+pConfig.points[0].getBlockX()+","+pConfig.points[0].getBlockZ()+"]")
-									.replace("{pos2}", "["+pConfig.points[1].getBlockX()+","+pConfig.points[1].getBlockZ()+"]")
+									.replace("{pos1}", "["+pConfig.getFirstPoint().getBlockX()+","+pConfig.getFirstPoint().getBlockZ()+"]")
+									.replace("{pos2}", "["+pConfig.getSecondPoint().getBlockX()+","+pConfig.getSecondPoint().getBlockZ()+"]")
 									.replace("{size}", ""+region.getSize())
 							);
 
-							pConfig.points[0]=null;
-							pConfig.points[1]=null;
+							pConfig.setSecondPoint(null);
+							pConfig.setSecondPoint(null);
 						}
 					});
 				}
 			} else { //Clear
 				Utils.sendMessageNewLines(player, Main.globalConfig.cleared_selection);
 
-				pConfig.points[0]=null;
-				pConfig.points[1]=null;
+				pConfig.setSecondPoint(null);
+				pConfig.setSecondPoint(null);
 			}
 		}
 	}
@@ -95,13 +95,13 @@ public class TI_BeaconManager {
 			new TI_Gui_Main().show(player);
 		} else { //Push boundry
 			for (int i=0; i<2; i++) {
-				if (pConfig.points[i]==null) continue;
+				if (pConfig.getPoints()[i]==null) continue;
 
 				List<Pair<Block, BlockFace>> blocks=Utils.getDirectionsInRay(player.getLineOfSight((Set<Material>)null, 3));
-				blocks=Utils.filterBlockDirListToXY(blocks, pConfig.points[i].getBlockX(), pConfig.points[i].getBlockZ());
+				blocks=Utils.filterBlockDirListToXY(blocks, pConfig.getPoints()[i].getBlockX(), pConfig.getPoints()[i].getBlockZ());
 				if (blocks.size()!=0) {
-					new Utils.delayedBeaconMove(pConfig.points[i], player, blocks.get(0).getRight());
-					pConfig.points[i]=pConfig.points[i].getBlock().getRelative(blocks.get(0).getRight()).getLocation();
+					new Utils.delayedBeaconMove(pConfig.getPoints()[i], player, blocks.get(0).getRight());
+					pConfig.getPoints()[i]=pConfig.getPoints()[i].getBlock().getRelative(blocks.get(0).getRight()).getLocation();
 				}
 			}
 		}

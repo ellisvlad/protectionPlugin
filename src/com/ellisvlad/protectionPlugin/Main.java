@@ -1,5 +1,7 @@
 package com.ellisvlad.protectionPlugin;
 
+import java.lang.reflect.Field;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -7,8 +9,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
-import com.ellisvlad.protectionPlugin.Regions.RegionCache;
 import com.ellisvlad.protectionPlugin.Regions.RegionController;
+import com.ellisvlad.protectionPlugin.Regions.RegionPermissions;
 import com.ellisvlad.protectionPlugin.ToolItem.TI_EventListener;
 import com.ellisvlad.protectionPlugin.config.GlobalConfig;
 
@@ -18,6 +20,37 @@ public class Main extends JavaPlugin {
 	public static GlobalConfig globalConfig;
 	
 	public static void main(String[] args) { //Test
+		try {
+			RegionPermissions perms = new RegionPermissions();
+			String str="CREATE TABLE `regions`("
+					+ "`rid` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,"
+					+ "`pid` INT(10) UNSIGNED NOT NULL,"
+					+ "`minX` INT(11) NOT NULL,"
+					+ "`maxX` INT(11) NOT NULL,"
+					+ "`minZ` INT(11) NOT NULL,"
+					+ "`maxZ` INT(11) NOT NULL,"
+					+ "`name` VARCHAR(16) NOT NULL,"
+					+ "`greeting` VARCHAR(255) NOT NULL,"
+					+ "`farewell` VARCHAR(255) NOT NULL,"
+					+ "`allowBlockBreak` BIT(1) NOT NULL,"
+					+ "`canChat` ENUM('None','Owner','Members','All') NOT NULL,"
+					+ "PRIMARY KEY (`rid`))";
+			for (Field f:perms.getClass().getDeclaredFields()) {
+				System.out.println(f.getName()+" "+f.get(perms).getClass().getSimpleName());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+//		Region r=Region.makeUnownedRegion(0, 0, 0, 0);
+//		r.addMember(22);
+//		r.addMember(33);
+//		r.addMember(5);
+//		System.out.println(r);
+//		System.out.println(r.hasMember(2));
+//		System.out.println(r.hasMember(33));
+//		r.removeMember(33);
+//		System.out.println(r.hasMember(33));
+		
 //		GlobalConfig c=new GlobalConfig();
 //		UUID uuid=UUID.randomUUID();
 //		c.getPlayerConfig(uuid);
