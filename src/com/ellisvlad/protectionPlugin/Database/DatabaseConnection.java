@@ -13,6 +13,9 @@ import java.sql.SQLException;
 import java.util.HashSet;
 
 import com.ellisvlad.protectionPlugin.Logger;
+import com.ellisvlad.protectionPlugin.Regions.RegionPermissions;
+import com.ellisvlad.protectionPlugin.Regions.RegionPermissions.RegionPermissionsBooleanValue;
+import com.ellisvlad.protectionPlugin.Regions.RegionPermissions.RegionPermissionsGroupValue;
 import com.ellisvlad.protectionPlugin.config.GlobalConfig;
 import com.ellisvlad.protectionPlugin.config.saveToDatabase;
 import com.google.gson.Gson;
@@ -186,11 +189,15 @@ public final class DatabaseConnection {
 				configStatement.setString(2, "Cleared selection");
 				configStatement.addBatch();
 				configStatement.setString(1, "created_region");
-				configStatement.setString(2, "§6Created a region from {pos1} to {pos2} of size {size}!");
+				configStatement.setString(2, "§6Created a region from {pos1} to {pos2} of size {size} named {name}!");
 				configStatement.addBatch();
 				configStatement.executeBatch();
 				configStatement.setString(1, "already_is_region");
 				configStatement.setString(2, "§4There already is a region here!");
+				configStatement.addBatch();
+				configStatement.executeBatch();
+				configStatement.setString(1, "regionSaveInterval");
+				configStatement.setString(2, "20000");
 				configStatement.addBatch();
 				configStatement.executeBatch();
 				configStatement.close();
@@ -198,19 +205,35 @@ public final class DatabaseConnection {
 			}
 			if (!rows.contains("regions")) {
 				Logger.out.println("Creating new regions table...");
-				sqlConnection.prepareStatement(
-					  "CREATE TABLE `regions` ("
-					+ "`rid` INT UNSIGNED NOT NULL AUTO_INCREMENT,"
-					+ "`pid` INT UNSIGNED NOT NULL,"
-					+ "`minX` INT NOT NULL,"
-					+ "`maxX` INT NOT NULL,"
-					+ "`minZ` INT NOT NULL,"
-					+ "`maxZ` INT NOT NULL,"
-					+ "PRIMARY KEY (`rid`)"
-					+ ")"
-				).executeUpdate();
+				try {
+					RegionPermissions perms=new RegionPermissions();
+					String str="CREATE TABLE `regions`("
+							+ "`rid` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,"
+							+ "`pid` INT(10) UNSIGNED NOT NULL,"
+							+ "`minX` INT(11) NOT NULL,"
+							+ "`maxX` INT(11) NOT NULL,"
+							+ "`minZ` INT(11) NOT NULL,"
+							+ "`maxZ` INT(11) NOT NULL,"
+							+ "`name` VARCHAR(16) NOT NULL,"
+							+ "`greeting` VARCHAR(255) NOT NULL,"
+							+ "`farewell` VARCHAR(255) NOT NULL,";
+					for (Field f:perms.getClass().getDeclaredFields()) {
+						if (f.get(perms) instanceof RegionPermissionsGroupValue) {
+							str+="`"+f.getName()+"` ENUM('None','Owner','Members','All') NOT NULL,";
+						}
+						if (f.get(perms) instanceof RegionPermissionsBooleanValue) {
+							str+="`"+f.getName()+"` BIT(1) NOT NULL,";
+						}
+					}
+					str += "PRIMARY KEY (`rid`))";
+
+					sqlConnection.prepareStatement(str).executeUpdate();
+				} catch (Exception e) {
+					Logger.err.println("Could not build the region table creator query!");
+					throw e;
+				}
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			Logger.err.println("Database init failed!");
 			e.printStackTrace();
 			return false;

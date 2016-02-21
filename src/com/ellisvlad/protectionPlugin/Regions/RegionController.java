@@ -1,5 +1,6 @@
 package com.ellisvlad.protectionPlugin.Regions;
 
+import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,6 +10,8 @@ import java.util.Set;
 
 import com.ellisvlad.protectionPlugin.Logger;
 import com.ellisvlad.protectionPlugin.Main;
+import com.ellisvlad.protectionPlugin.Regions.RegionPermissions.RegionPermissionsBooleanValue;
+import com.ellisvlad.protectionPlugin.Regions.RegionPermissions.RegionPermissionsGroupValue;
 
 public class RegionController {
 	
@@ -16,6 +19,8 @@ public class RegionController {
 	private HashSet<Region> changedRegions=new HashSet<>();
 	private RegionCache cache=new RegionCache(this);
 	private int nextRegionId;
+
+	private static String regionInsertStr=null;
 	
 	public RegionController() {
 		Logger.out.println("Loading regions...");
@@ -36,6 +41,8 @@ public class RegionController {
 		}
 		loadAll();
 		Logger.out.println(loadedRegionsById.size()+" regions loaded!");
+		
+		new RegionSaver();
 	}
 	
 	public Region getRegionById(int regionId) {
@@ -91,7 +98,7 @@ public class RegionController {
 		}
 	}
 	
-	protected void savePending() {
+	public void savePending() {
 		if (!Main.globalConfig.dbConnection.isConnected()) {
 			Logger.err.println("Database was not connected! Region controller could not save!");
 			return;
@@ -120,13 +127,40 @@ public class RegionController {
 
 		PreparedStatement ps=null;
 		try {
-			ps=Main.globalConfig.dbConnection.prepareStatement("INSERT INTO `regions`(`rid`, `pid`, `minX`, `maxX`, `minZ`, `maxZ`) VALUES (?, ?, ?, ?, ?, ?)");
-			ps.setInt(1, r.regionId);
-			ps.setInt(2, r.ownerPid);
-			ps.setInt(3, r.minX);
-			ps.setInt(4, r.maxX);
-			ps.setInt(5, r.minZ);
-			ps.setInt(6, r.maxZ);
+			if (regionInsertStr==null) {
+				RegionPermissions perms=new RegionPermissions();
+				regionInsertStr="INSERT INTO `regions`(`rid`, `pid`, `minX`, `maxX`, `minZ`, `maxZ`, `name`, `greeting`, `farewell`, ";
+				int i=9;
+				for (Field f:perms.getClass().getDeclaredFields()) {
+					regionInsertStr+="`"+f.getName()+"`,";
+					i++;
+				}
+				regionInsertStr=regionInsertStr.substring(0, regionInsertStr.length()-1);
+				regionInsertStr+=") VALUES (";
+				for (; i>0; i--) regionInsertStr+="?,";
+				regionInsertStr=regionInsertStr.substring(0, regionInsertStr.length()-1);
+				regionInsertStr+=")";
+			}
+
+			ps=Main.globalConfig.dbConnection.prepareStatement(regionInsertStr);
+			int i=1;
+			ps.setInt(i++, r.regionId);
+			ps.setInt(i++, r.ownerPid);
+			ps.setInt(i++, r.minX);
+			ps.setInt(i++, r.maxX);
+			ps.setInt(i++, r.minZ);
+			ps.setInt(i++, r.maxZ);
+			ps.setString(i++, r.name);
+			ps.setString(i++, r.greeting);
+			ps.setString(i++, r.farewell);
+			for (Field f:RegionPermissions.class.getDeclaredFields()) {
+				if (f.get(r.perms) instanceof RegionPermissionsGroupValue) {
+					ps.setString(i++, ((RegionPermissionsGroupValue)f.get(r.perms)).toString());
+				}
+				if (f.get(r.perms) instanceof RegionPermissionsBooleanValue) {
+					ps.setBoolean(i++, ((RegionPermissionsBooleanValue)f.get(r.perms))==RegionPermissionsBooleanValue.True);
+				}
+			}
 			ps.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -160,20 +194,54 @@ public class RegionController {
 		return ret;
 	}
 	
-	private class regionSaveStatement {
+	protected void pendSave(Region r) {
+		changedRegions.add(r);
+	}
+	
+	private static class regionSaveStatement {
 		PreparedStatement statement;
+		static String regionUpdaterStr=null;
 		
 		regionSaveStatement() throws Exception {
-			statement=Main.globalConfig.dbConnection.prepareStatement("UPDATE `regions` SET `pid`=?, `minX`=?, `maxX`=?, `minZ`=?, `maxZ`=? WHERE `rid`=?");
+			if (regionUpdaterStr==null) {
+				RegionPermissions perms=new RegionPermissions();
+				regionUpdaterStr="UPDATE `regions` SET `pid`=?, `minX`=?, `maxX`=?, `minZ`=?, `maxZ`=?, `name`=?, `greeting`=?, `farewell`=?,";
+				for (Field f:perms.getClass().getDeclaredFields()) {
+					if (f.get(perms) instanceof RegionPermissionsGroupValue) {
+						regionUpdaterStr+="`"+f.getName()+"`=?,";
+					}
+					if (f.get(perms) instanceof RegionPermissionsBooleanValue) {
+						regionUpdaterStr+="`"+f.getName()+"`=?,";
+					}
+				}
+				regionUpdaterStr=regionUpdaterStr.substring(0, regionUpdaterStr.length()-1);
+				regionUpdaterStr+="WHERE `rid`=?";
+			}
+			
+			statement=Main.globalConfig.dbConnection.prepareStatement(regionUpdaterStr);
 		}
 
-		public void addRegion(Region r) throws SQLException {
-			statement.setInt(1, r.ownerPid);
-			statement.setInt(2, r.minX);
-			statement.setInt(3, r.maxX);
-			statement.setInt(4, r.minZ);
-			statement.setInt(5, r.maxZ);
-			statement.setInt(6, r.regionId);
+		public void addRegion(Region r) throws Exception {
+			int i=1;
+			statement.setInt(i++, r.ownerPid);
+			statement.setInt(i++, r.minX);
+			statement.setInt(i++, r.maxX);
+			statement.setInt(i++, r.minZ);
+			statement.setInt(i++, r.maxZ);
+			statement.setString(i++, r.name);
+			statement.setString(i++, r.greeting);
+			statement.setString(i++, r.farewell);
+
+			for (Field f:RegionPermissions.class.getDeclaredFields()) {
+				if (f.get(r.perms) instanceof RegionPermissionsGroupValue) {
+					statement.setString(i++, ((RegionPermissionsGroupValue)f.get(r.perms)).toString());
+				}
+				if (f.get(r.perms) instanceof RegionPermissionsBooleanValue) {
+					statement.setBoolean(i++, ((RegionPermissionsBooleanValue)f.get(r.perms))==RegionPermissionsBooleanValue.True);
+				}
+			}
+			
+			statement.setInt(i++, r.regionId);
 			statement.addBatch();
 		}
 
@@ -184,5 +252,20 @@ public class RegionController {
 		public void execute() throws SQLException {
 			statement.executeBatch();
 		}
+	}
+	
+	private class RegionSaver extends Thread {
+		
+		public RegionSaver() {
+			start();
+		}
+		
+		public void run() {
+			while (true) {
+				try {Thread.sleep(Main.globalConfig.regionSaveInterval);} catch (Exception e) {};
+				savePending();
+			}
+		}
+		
 	}
 }

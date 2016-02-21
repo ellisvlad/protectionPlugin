@@ -34,6 +34,8 @@ public class GlobalConfig {
 	public String created_region;
 	@saveToDatabase
 	public String already_is_region;
+	@saveToDatabase
+	public int regionSaveInterval;
 
 	public DatabaseConnection dbConnection;
 	public RegionController regionController;

@@ -15,8 +15,8 @@ public class Region {
 	int minX, minZ, maxX, maxZ;
 	
 	RegionPermissions perms;
-	String greeting, farewell;
 	String name;
+	String greeting, farewell;
 	
 	protected Region(int regionId, int ownerPid, int x1, int z1, int x2, int z2) {
 		this.regionId=regionId;
@@ -27,6 +27,7 @@ public class Region {
 		this.maxX=Math.max(x1, x2);
 		this.maxZ=Math.max(z1, z2);
 		this.perms=new RegionPermissions();
+		this.name="";
 		this.greeting="";
 		this.farewell="";
 	}
@@ -81,6 +82,15 @@ public class Region {
 	public boolean hasMember(Player p) {
 		PlayerConfig pConfig=Main.globalConfig.getPlayerConfig(p);
 		return hasMember(pConfig.getPlayerId());
+	}
+
+	public void setName(String name) {
+		this.name=name;
+		Main.globalConfig.regionController.pendSave(this);
+	}
+
+	public String getName() {
+		return name;
 	}
 	
 }

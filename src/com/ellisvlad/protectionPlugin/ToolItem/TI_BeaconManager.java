@@ -11,7 +11,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
-import com.comphenix.net.sf.cglib.core.MethodWrapper.MethodWrapperKey;
 import com.ellisvlad.protectionPlugin.Main;
 import com.ellisvlad.protectionPlugin.Utils;
 import com.ellisvlad.protectionPlugin.Utils.delayedPromptTextResponseHandler;
@@ -69,11 +68,14 @@ public class TI_BeaconManager {
 								}
 							}
 							
+							region.setName(lines[3]);
+							
 							Utils.sendMessageNewLines(player,
 								Main.globalConfig.created_region
 									.replace("{pos1}", "["+pConfig.getFirstPoint().getBlockX()+","+pConfig.getFirstPoint().getBlockZ()+"]")
 									.replace("{pos2}", "["+pConfig.getSecondPoint().getBlockX()+","+pConfig.getSecondPoint().getBlockZ()+"]")
 									.replace("{size}", ""+region.getSize())
+									.replace("{name}", ""+region.getName())
 							);
 
 							pConfig.setSecondPoint(null);
