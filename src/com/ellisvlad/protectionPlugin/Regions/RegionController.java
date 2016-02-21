@@ -89,7 +89,7 @@ public class RegionController {
 			ResultSet rs=ps.executeQuery();
 			while (rs.next()) {
 				 Region region=createRegionFromResultSet(rs);
-				 cache.create(region, false);
+				 cache.create(region, true);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -129,7 +129,7 @@ public class RegionController {
 		try {
 			if (regionInsertStr==null) {
 				RegionPermissions perms=new RegionPermissions();
-				regionInsertStr="INSERT INTO `regions`(`rid`, `pid`, `minX`, `maxX`, `minZ`, `maxZ`, `name`, `greeting`, `farewell`, ";
+				regionInsertStr="INSERT INTO `regions`(`rid`, `pid`, `minX`, `maxX`, `minZ`, `maxZ`, `name`, ";
 				int i=9;
 				for (Field f:perms.getClass().getDeclaredFields()) {
 					regionInsertStr+="`"+f.getName()+"`,";
@@ -151,8 +151,6 @@ public class RegionController {
 			ps.setInt(i++, r.minZ);
 			ps.setInt(i++, r.maxZ);
 			ps.setString(i++, r.name);
-			ps.setString(i++, r.greeting);
-			ps.setString(i++, r.farewell);
 			for (Field f:RegionPermissions.class.getDeclaredFields()) {
 				if (f.get(r.perms) instanceof RegionPermissionsGroupValue) {
 					ps.setString(i++, ((RegionPermissionsGroupValue)f.get(r.perms)).toString());
@@ -179,7 +177,7 @@ public class RegionController {
 		return nextRegionId++;
 	}
 
-	protected Region createRegionFromResultSet(ResultSet rs) throws SQLException {
+	protected Region createRegionFromResultSet(ResultSet rs) throws Exception {
 		Region ret=new Region(
 			rs.getInt("rid"),
 			rs.getInt("pid"),
@@ -189,8 +187,14 @@ public class RegionController {
 			rs.getInt("maxZ")
 		);
 		ret.name=rs.getString("name");
-		ret.greeting=rs.getString("greeting");
-		ret.farewell=rs.getString("farewell");
+		for (Field f:RegionPermissions.class.getDeclaredFields()) {
+			if (f.get(ret.perms) instanceof RegionPermissionsGroupValue) {
+				f.set(ret.perms, RegionPermissionsGroupValue.valueOf(rs.getString(f.getName())));
+			}
+			if (f.get(ret.perms) instanceof RegionPermissionsBooleanValue) {
+				f.set(ret.perms, rs.getBoolean(f.getName())?RegionPermissionsBooleanValue.True:RegionPermissionsBooleanValue.False);
+			}
+		}
 		return ret;
 	}
 	
@@ -205,7 +209,7 @@ public class RegionController {
 		regionSaveStatement() throws Exception {
 			if (regionUpdaterStr==null) {
 				RegionPermissions perms=new RegionPermissions();
-				regionUpdaterStr="UPDATE `regions` SET `pid`=?, `minX`=?, `maxX`=?, `minZ`=?, `maxZ`=?, `name`=?, `greeting`=?, `farewell`=?,";
+				regionUpdaterStr="UPDATE `regions` SET `pid`=?, `minX`=?, `maxX`=?, `minZ`=?, `maxZ`=?, `name`=?,";
 				for (Field f:perms.getClass().getDeclaredFields()) {
 					if (f.get(perms) instanceof RegionPermissionsGroupValue) {
 						regionUpdaterStr+="`"+f.getName()+"`=?,";
@@ -229,8 +233,6 @@ public class RegionController {
 			statement.setInt(i++, r.minZ);
 			statement.setInt(i++, r.maxZ);
 			statement.setString(i++, r.name);
-			statement.setString(i++, r.greeting);
-			statement.setString(i++, r.farewell);
 
 			for (Field f:RegionPermissions.class.getDeclaredFields()) {
 				if (f.get(r.perms) instanceof RegionPermissionsGroupValue) {

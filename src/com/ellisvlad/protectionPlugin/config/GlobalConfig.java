@@ -36,6 +36,30 @@ public class GlobalConfig {
 	public String already_is_region;
 	@saveToDatabase
 	public int regionSaveInterval;
+	@saveToDatabase
+	public String passThroughDenied;
+	@saveToDatabase
+	public String blockBreakDenied;
+	@saveToDatabase
+	public String blockPlaceDenied;
+	@saveToDatabase
+	public String pvpDenied;
+	@saveToDatabase
+	public String itemDropDenied;
+	@saveToDatabase
+	public String teleportInDenied;
+	@saveToDatabase
+	public String teleportOutDenied;
+	@saveToDatabase
+	public String lighterDenied;
+	@saveToDatabase
+	public String chestAccessDenied;
+	@saveToDatabase
+	public String blockUseDenied;
+	@saveToDatabase
+	public String vehicleBreakDenied;
+	@saveToDatabase
+	public String chatDenied;
 
 	public DatabaseConnection dbConnection;
 	public RegionController regionController;
@@ -50,6 +74,7 @@ public class GlobalConfig {
 	}
 
 	public PlayerConfig getPlayerConfig(Player p) {
+		if (p==null) return null;
 		return getPlayerConfig(p.getUniqueId());
 	}
 	public PlayerConfig getPlayerConfig(UUID p_uuid) {

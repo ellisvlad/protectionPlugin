@@ -4,8 +4,8 @@ public class RegionPermissions {
 	
 	public RegionPermissionsValue
 		passThrough				=RegionPermissionsGroupValue.All,
-		allowBlockPlace			=RegionPermissionsGroupValue.Members,
-		allowBlockBreak			=RegionPermissionsGroupValue.Members,
+		allowBlockPlace			=RegionPermissionsGroupValue.All,
+		allowBlockBreak			=RegionPermissionsGroupValue.All,
 		allowPvp				=RegionPermissionsBooleanValue.True,
 		allowMobDamage			=RegionPermissionsBooleanValue.True,
 		allowXpDrops			=RegionPermissionsBooleanValue.True,
@@ -15,9 +15,8 @@ public class RegionPermissions {
 		allowCreeperExplosions	=RegionPermissionsBooleanValue.True,
 		allowOtherExplosions	=RegionPermissionsBooleanValue.True,
 		allowEndermanGrief		=RegionPermissionsBooleanValue.True,
-		allowTeleportIn			=RegionPermissionsGroupValue.All,
-		allowTeleportOut		=RegionPermissionsGroupValue.All,
-		allowTnt				=RegionPermissionsGroupValue.All,
+		allowPlayerTeleportIn	=RegionPermissionsGroupValue.All,
+		allowPlayerTeleportOut	=RegionPermissionsGroupValue.All,
 		allowLighter			=RegionPermissionsGroupValue.All,
 		allowFireSpread			=RegionPermissionsBooleanValue.True,
 		allowLightning			=RegionPermissionsBooleanValue.True,
@@ -26,13 +25,9 @@ public class RegionPermissions {
 		allowBlockUse			=RegionPermissionsGroupValue.All,
 		allowVehiclePlace		=RegionPermissionsGroupValue.All,
 		allowVehicleBreak		=RegionPermissionsGroupValue.All,
-		allowSnowFall			=RegionPermissionsBooleanValue.True,
-		allowSnowMelt			=RegionPermissionsBooleanValue.True,
-		allowIceForm			=RegionPermissionsBooleanValue.True,
-		allowIceMelt			=RegionPermissionsBooleanValue.True,
 		allowLeafDecay			=RegionPermissionsBooleanValue.True,
 		allowGrassGrowth		=RegionPermissionsBooleanValue.True,
-		disableDamage			=RegionPermissionsGroupValue.None,
+		allowDamage				=RegionPermissionsBooleanValue.True,
 		canChat					=RegionPermissionsGroupValue.All
 	;
 

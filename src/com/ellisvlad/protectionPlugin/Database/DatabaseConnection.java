@@ -12,6 +12,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 
+import org.bukkit.Material;
+
 import com.ellisvlad.protectionPlugin.Logger;
 import com.ellisvlad.protectionPlugin.Regions.RegionPermissions;
 import com.ellisvlad.protectionPlugin.Regions.RegionPermissions.RegionPermissionsBooleanValue;
@@ -137,10 +139,10 @@ public final class DatabaseConnection {
 					"INSERT INTO `config` (`name`, `value`) VALUES (?, ?)"
 				);
 				configStatement.setString(1, "default_tool_name");
-				configStatement.setString(2, "WOOL"); //TODO: Wool.. 271
+				configStatement.setString(2, "WOOD_AXE");
 				configStatement.addBatch();
 				configStatement.setString(1, "default_tool_data");
-				configStatement.setString(2, "4"); //TODO: Yellow.. -1
+				configStatement.setString(2, "0");
 				configStatement.addBatch();
 				configStatement.setString(1, "welcome_message");
 				configStatement.setString(2, 
@@ -198,6 +200,42 @@ public final class DatabaseConnection {
 				configStatement.executeBatch();
 				configStatement.setString(1, "regionSaveInterval");
 				configStatement.setString(2, "20000");
+				configStatement.addBatch();
+				configStatement.setString(1, "passThroughDenied");
+				configStatement.setString(2, "§4No entry to this region!");
+				configStatement.addBatch();
+				configStatement.setString(1, "blockBreakDenied");
+				configStatement.setString(2, "§4Block breaking is disabled in this region!");
+				configStatement.addBatch();
+				configStatement.setString(1, "blockPlaceDenied");
+				configStatement.setString(2, "§4Block Placing is disabled in this region!");
+				configStatement.addBatch();
+				configStatement.setString(1, "pvpDenied");
+				configStatement.setString(2, "§4PVP is disabled in this region!");
+				configStatement.addBatch();
+				configStatement.setString(1, "itemDropDenied");
+				configStatement.setString(2, "§4Item dropping is disabled in this region!");
+				configStatement.addBatch();
+				configStatement.setString(1, "teleportInDenied");
+				configStatement.setString(2, "§4Teleporting into this region is disabled!");
+				configStatement.addBatch();
+				configStatement.setString(1, "teleportOutDenied");
+				configStatement.setString(2, "§4Teleporting out of this region is disabled!");
+				configStatement.addBatch();
+				configStatement.setString(1, "lighterDenied");
+				configStatement.setString(2, "§4Lighters are disabled in this region!");
+				configStatement.addBatch();
+				configStatement.setString(1, "chestAccessDenied");
+				configStatement.setString(2, "§4Inventory access is disabled in this region!");
+				configStatement.addBatch();
+				configStatement.setString(1, "blockUseDenied");
+				configStatement.setString(2, "§4Block use is disabled in this region!");
+				configStatement.addBatch();
+				configStatement.setString(1, "vehicleBreakDenied");
+				configStatement.setString(2, "§4Vehicle breaking is disabled in this region!");
+				configStatement.addBatch();
+				configStatement.setString(1, "chatDenied");
+				configStatement.setString(2, "§4Chatting is disabled in this region!");
 				configStatement.addBatch();
 				configStatement.executeBatch();
 				configStatement.close();

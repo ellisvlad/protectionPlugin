@@ -31,9 +31,6 @@ public class TI_BeaconManager {
 			pConfig.setSecondPoint(pos);
 			Utils.sendMessageNewLines(player, Main.globalConfig.second_point_selected);
 		} else { //Create region or Clear both
-			Utils.clearBeaconLine(pConfig.getFirstPoint(), player);
-			Utils.clearBeaconLine(pConfig.getSecondPoint(), player);
-
 			if (player.isSneaking()) {
 				Region region=Main.globalConfig.regionController.makeNewRegion(
 					pConfig.getPlayerId(),
@@ -78,15 +75,21 @@ public class TI_BeaconManager {
 									.replace("{name}", ""+region.getName())
 							);
 
-							pConfig.setSecondPoint(null);
+							Utils.clearBeaconLine(pConfig.getFirstPoint(), player);
+							Utils.clearBeaconLine(pConfig.getSecondPoint(), player);
+							
+							pConfig.setFirstPoint(null);
 							pConfig.setSecondPoint(null);
 						}
 					});
 				}
 			} else { //Clear
+				Utils.clearBeaconLine(pConfig.getFirstPoint(), player);
+				Utils.clearBeaconLine(pConfig.getSecondPoint(), player);
+				
 				Utils.sendMessageNewLines(player, Main.globalConfig.cleared_selection);
 
-				pConfig.setSecondPoint(null);
+				pConfig.setFirstPoint(null);
 				pConfig.setSecondPoint(null);
 			}
 		}

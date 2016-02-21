@@ -6,6 +6,9 @@ import java.util.Set;
 import org.bukkit.entity.Player;
 
 import com.ellisvlad.protectionPlugin.Main;
+import com.ellisvlad.protectionPlugin.Regions.RegionPermissions.RegionPermissionsBooleanValue;
+import com.ellisvlad.protectionPlugin.Regions.RegionPermissions.RegionPermissionsGroupValue;
+import com.ellisvlad.protectionPlugin.Regions.RegionPermissions.RegionPermissionsValue;
 import com.ellisvlad.protectionPlugin.config.PlayerConfig;
 
 public class Region {
@@ -13,10 +16,9 @@ public class Region {
 	int regionId, ownerPid;
 	Set<Integer> members;
 	int minX, minZ, maxX, maxZ;
-	
-	RegionPermissions perms;
+
 	String name;
-	String greeting, farewell;
+	RegionPermissions perms;
 	
 	protected Region(int regionId, int ownerPid, int x1, int z1, int x2, int z2) {
 		this.regionId=regionId;
@@ -28,8 +30,6 @@ public class Region {
 		this.maxZ=Math.max(z1, z2);
 		this.perms=new RegionPermissions();
 		this.name="";
-		this.greeting="";
-		this.farewell="";
 	}
 	
 	public static Region makeUnownedRegion(int x1, int z1, int x2, int z2) {
@@ -91,6 +91,38 @@ public class Region {
 
 	public String getName() {
 		return name;
+	}
+
+	public static boolean allows(Region region, RegionPermissionsValue permission, PlayerConfig player) {
+		if (permission instanceof RegionPermissionsBooleanValue) return ((RegionPermissionsBooleanValue)permission)==RegionPermissionsBooleanValue.True;
+		
+		if (permission instanceof RegionPermissionsGroupValue) {
+			RegionPermissionsGroupValue perm=(RegionPermissionsGroupValue)permission;
+			switch (perm) {
+			case All:
+				return true;
+			case Members:
+				return region.ownerPid==player.getPlayerId() || region.hasMember(player.getPlayerId());
+			case Owner:
+				return region.ownerPid==player.getPlayerId();
+			case None:
+				return false;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static boolean anyPermissionFailures(int x, int z, Player p, String permissionName) {
+		try {
+			PlayerConfig pc=Main.globalConfig.getPlayerConfig(p);
+			for (Region region:Main.globalConfig.regionController.getRegionsByPosition(x, z)) {
+				if (!Region.allows(region, (RegionPermissionsValue)RegionPermissions.class.getField(permissionName).get(region.perms), pc)) {
+					return true;
+				}
+			}
+		} catch (Exception e) {};
+		return false;
 	}
 	
 }

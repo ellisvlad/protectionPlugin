@@ -8,6 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.ellisvlad.protectionPlugin.Database.DatabaseConnection;
 import com.ellisvlad.protectionPlugin.Regions.RegionController;
+import com.ellisvlad.protectionPlugin.Regions.Region_Events;
 import com.ellisvlad.protectionPlugin.ToolItem.TI_EventListener;
 import com.ellisvlad.protectionPlugin.config.GlobalConfig;
 
@@ -62,6 +63,7 @@ public class Main extends JavaPlugin {
 		PluginManager pm = Bukkit.getPluginManager();
 		pm.registerEvents(new CommandListener(), this);
 		pm.registerEvents(new TI_EventListener(), this);
+		pm.registerEvents(new Region_Events(), this);
 		
 		globalConfig.regionController=new RegionController();
 		
